@@ -178,6 +178,7 @@ int tokenize(char* const source, Command** out_result, int* out_result_len)
 		free(cleaned_source);
 		return errorcode;
 	}
+	free(cleaned_source);
 
 	// Copy allocated final result to the arguments
 	*out_result = result;
