@@ -17,7 +17,7 @@ static const int syscall_sys_write = 4;
 
 static int str_append(char** str, const char* format, ...)
 {
-	// This is only used to compile arguments, so fixed-size string should
+	// This is only used to combine arguments, so fixed-size string should
 	// be safe to use
 	char formatted_str[1000];
 	va_list arg_ptr;
@@ -119,6 +119,7 @@ int tokens_to_assembly(Command* const source, const int source_length,
 		str_append(&output, "\nmov eax, %d\nmov ebx, 0\nint 0x80\n", syscall_sys_exit);
 	}
 	if (errorcode != 0) {
+		free(output);
 		return errorcode;
 	}
 
