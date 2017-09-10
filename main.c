@@ -33,7 +33,8 @@ char* read_file(const char* filename)
 int main(int argc, char **argv)
 {
 	if (argc <= 2) {
-		printf("Usage: ./brainfuck [source filename] [output filename]");
+		printf("Usage: ./brainfuck [source filename] [output filename]\n");
+		exit(1);
 	}
 	char* in_filename = argv[1];
 	char* out_filename = argv[2];
