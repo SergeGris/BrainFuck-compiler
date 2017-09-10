@@ -1,0 +1,178 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include "compiler.h"
+
+// Maximum size of the data array
+static const int DATA_ARRAY_SIZE = 30000;
+
+static int str_append(char** str, const char* format, ...)
+{
+	// This is only used to compile arguments, so fixed-size string should
+	// be safe to use
+	char formatted_str[1000];
+	va_list arg_ptr;
+	va_start(arg_ptr, format);
+	vsprintf(formatted_str, format, arg_ptr);
+
+	const int old_length = (*str == NULL ? 0 : strlen(*str));
+	char* new_str = calloc(old_length + strlen(formatted_str) + 1, sizeof(char));
+	if (new_str == NULL) {
+		// Error: Out of memory
+		return 201;
+	}
+
+	if (*str != NULL) {
+		strcat(new_str, *str);
+	}
+	strcat(new_str, formatted_str);
+
+	free(*str);
+	*str = new_str;
+
+	return 0;
+}
+
+int tokens_to_assembly(Command* const source, const int source_length,
+	char** final_output, int* final_output_length)
+{
+	char* output = NULL;
+	*final_output = NULL;
+	*final_output_length = 0;
+
+	// Initialize variables
+	str_append(&output, "bits 32\n\n");
+	str_append(&output, "section .data\nglobal array\narray times 30000 db 0\nbuffer dd 0\n\n");
+
+	// Beginning of the code block
+	str_append(&output, "section .text\nglobal _start\n\n");
+
+	// Subroutines for I/O
+	str_append(&output, "print_char:\n"
+			"xor ebx, ebx\nmov bx, [eax]\nmov [buffer], ebx\npush eax\npush ebx\n"
+			"mov eax, 4\nmov ebx, 1\nmov ecx, buffer\nmov edx, 1\nint 0x80\n"
+			"pop ebx\npop eax\nret\n\n");
+	str_append(&output, "input_char:\n"
+			"push eax\npush ebx\nmov eax, 3\nmov ebx, 0\nmov ecx, buffer\n"
+			"mov edx, 1\nint 0x80\npop ebx\npop eax\nmov ecx, [buffer]\n"
+			"mov [eax], cx\nret\n\n");
+
+	// Execution starts at this point
+	str_append(&output, "_start:\nmov eax, array\n");
+
+	// Convert tokens to machine code
+	int errorcode = 0;
+	for (int i = 0; i < source_length && errorcode == 0; i++) {
+		switch (source[i].token) {
+		case T_INC:
+			if (source[i].value > 0) {
+				str_append(&output, "mov bx, %d\nadd [eax], bx\n", source[i].value & 0xFF);
+			}
+			else if (source[i].value < 0) {
+				str_append(&output, "mov bx, %d\nsub [eax], bx\n", (-source[i].value) & 0xFF);
+			}
+			else {
+				// Command has no effect
+			}
+			break;
+		case T_POINTER_INC:
+			if (source[i].value > 0) {
+				str_append(&output, "mov ebx, %d\nadd eax, ebx\n", source[i].value);
+			}
+			else if (source[i].value < 0) {
+				str_append(&output, "mov ebx, %d\nsub eax, ebx\n", -source[i].value);
+			}
+			else {
+				// Command has no effect
+			}
+			break;
+		case T_LABEL:
+			str_append(&output, "\nlabel_%d_begin:\ncmp byte [eax], 0\nje label_%d_end\n",
+				source[i].value, source[i].value);
+			break;
+		case T_JUMP:
+			str_append(&output, "\nlabel_%d_end:\ncmp byte [eax], 0\njne label_%d_begin\n",
+				source[i].value, source[i].value);
+			break;
+		case T_READ:
+			str_append(&output, "call input_char\n");
+			break;
+		case T_PRINT:
+			str_append(&output, "call print_char\n");
+			break;
+		default:
+			break;
+		}
+	}
+
+	// Write quit commands
+	if (errorcode == 0) {
+		str_append(&output, "\nmov ebx, 0\nmov eax, 1\nint 0x80\n");
+	}
+	if (errorcode != 0) {
+		return errorcode;
+	}
+
+	*final_output = output;
+	*final_output_length = strlen(output);
+
+	return 0;
+}
+
+int tokens_to_machinecode(Command* const source, const int source_length,
+	char** output, int* output_length)
+{
+	// Error: Not implemented
+	return 202;
+}
+
+int write_elf_file(const char* filename, const char* source,
+	const int source_length)
+{
+	// Error: Not implemented
+	return 202;
+}
+
+int write_text_file(const char* filename, const char* source,
+	const int source_length)
+{
+	FILE* handle = fopen(filename, "w");
+	if (!handle) {
+		// Error: Writing failed
+		return 203;
+	}
+	int result = fwrite(source , sizeof(char), source_length, handle);
+	if (result != source_length) {
+		// Error: Writing failed
+		return 203;
+	}
+	fclose(handle);
+	return 0;
+}
+
+int compile_to_file(const char* filename, const FileType filetype,
+	Command* const source, const int source_length)
+{
+	char *instructions = NULL;
+	int instructions_length = 0;
+	int err = 0;
+	if (filetype == FILETYPE_ELF) {
+		err = tokens_to_machinecode(source, source_length, &instructions, &instructions_length);
+		if (err != 0) {
+			return err;
+		}
+		err = write_elf_file(filename, instructions, instructions_length);
+	}
+	else if (filetype == FILETYPE_ASSEMBLY) {
+		err = tokens_to_assembly(source, source_length, &instructions, &instructions_length);
+		if (err != 0) {
+			return err;
+		}
+		err = write_text_file(filename, instructions, instructions_length);
+	}
+	free(instructions);
+
+	return err;
+}
