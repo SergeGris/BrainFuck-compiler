@@ -8,6 +8,13 @@
 // Maximum size of the data array
 static const int DATA_ARRAY_SIZE = 30000;
 
+// Linux kernel system calls
+static const int syscall_stdin = 0;
+static const int syscall_stdout = 1;
+static const int syscall_sys_exit = 1;
+static const int syscall_sys_read = 3;
+static const int syscall_sys_write = 4;
+
 static int str_append(char** str, const char* format, ...)
 {
 	// This is only used to compile arguments, so fixed-size string should
@@ -44,7 +51,7 @@ int tokens_to_assembly(Command* const source, const int source_length,
 
 	// Initialize variables
 	str_append(&output, "bits 32\n\n");
-	str_append(&output, "section .data\nglobal array\narray times 30000 db 0\nbuffer dd 0\n\n");
+	str_append(&output, "section .data\nglobal array\narray times %d db 0\nbuffer dd 0\n\n", DATA_ARRAY_SIZE);
 
 	// Beginning of the code block
 	str_append(&output, "section .text\nglobal _start\n\n");
@@ -52,12 +59,12 @@ int tokens_to_assembly(Command* const source, const int source_length,
 	// Subroutines for I/O
 	str_append(&output, "print_char:\n"
 			"xor ebx, ebx\nmov bx, [eax]\nmov [buffer], ebx\npush eax\npush ebx\n"
-			"mov eax, 4\nmov ebx, 1\nmov ecx, buffer\nmov edx, 1\nint 0x80\n"
-			"pop ebx\npop eax\nret\n\n");
+			"mov eax, %d\nmov ebx, %d\nmov ecx, buffer\nmov edx, 1\nint 0x80\n"
+			"pop ebx\npop eax\nret\n\n", syscall_sys_write, syscall_stdout);
 	str_append(&output, "input_char:\n"
-			"push eax\npush ebx\nmov eax, 3\nmov ebx, 0\nmov ecx, buffer\n"
+			"push eax\npush ebx\nmov eax, %d\nmov ebx, %d\nmov ecx, buffer\n"
 			"mov edx, 1\nint 0x80\npop ebx\npop eax\nmov ecx, [buffer]\n"
-			"mov [eax], cx\nret\n\n");
+			"mov [eax], cx\nret\n\n", syscall_sys_read, syscall_stdin);
 
 	// Execution starts at this point
 	str_append(&output, "_start:\nmov eax, array\n");
@@ -109,7 +116,7 @@ int tokens_to_assembly(Command* const source, const int source_length,
 
 	// Write quit commands
 	if (errorcode == 0) {
-		str_append(&output, "\nmov ebx, 0\nmov eax, 1\nint 0x80\n");
+		str_append(&output, "\nmov eax, %d\nmov ebx, 0\nint 0x80\n", syscall_sys_exit);
 	}
 	if (errorcode != 0) {
 		return errorcode;
