@@ -18,3 +18,4 @@ all: hello-world
 
 clean:
 	rm -rf $(ODIR)
+	rm -f hello-world

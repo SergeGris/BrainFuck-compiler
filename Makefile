@@ -16,6 +16,11 @@ all: main
 main: $(OBJ)
 	gcc -o brainfuck $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
 
+examples:
+	cd examples
+	make
+	cd ..
+
 .PHONY: clean
 
 clean:
