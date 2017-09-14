@@ -16,6 +16,8 @@ all: main
 main: $(OBJ)
 	gcc -o brainfuck $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
 
+.PHONY: clean
+
 clean:
 	rm -rf $(ODIR)
 	rm -f brainfuck

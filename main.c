@@ -43,6 +43,7 @@ int main(int argc, char **argv)
 	char* source = read_file(in_filename);
 	if (source == NULL) {
 		printf("Error: Failed to read file %s\n", in_filename);
+		exit(1);
 	}
 
 	// Interpret symbols
