@@ -1,16 +1,17 @@
 ODIR = obj
-
+COMPILER=../brainfuck
+ASSEMBLER=nasm -f elf32
 LINKER=ld -m elf_i386 -s -o
 
 hello-world: hello-world.o
 	$(LINKER) $@ $(ODIR)/$<
 
 %.o: $(ODIR)/%.asm
-	nasm -f elf32 $<
+	$(ASSEMBLER) $<
 
-$(ODIR)/%.asm: %.b
+$(ODIR)/%.asm: %.b $(COMPILER)
 	mkdir -p $(ODIR)
-	../brainfuck $< $@
+	$(COMPILER) $< $@
 
 all: hello-world
 

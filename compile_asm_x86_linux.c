@@ -56,13 +56,13 @@ int tokens_to_asm_x86_linux(Command* const source, const int source_length,
 
 	// Subroutines for I/O
 	str_append(&output, "print_char:\n"
-			"xor ebx, ebx\nmov bx, [eax]\nmov [buffer], ebx\npush eax\npush ebx\n"
+			"push eax\npush ebx\npush ecx\npush edx\nxor ebx, ebx\nmov bx, [eax]\nmov [buffer], ebx\n"
 			"mov eax, %d\nmov ebx, %d\nmov ecx, buffer\nmov edx, 1\nint 0x80\n"
-			"pop ebx\npop eax\nret\n\n", syscall_sys_write, syscall_stdout);
+			"pop edx\npop ecx\npop ebx\npop eax\nret\n\n", syscall_sys_write, syscall_stdout);
 	str_append(&output, "input_char:\n"
-			"push eax\npush ebx\nmov eax, %d\nmov ebx, %d\nmov ecx, buffer\n"
-			"mov edx, 1\nint 0x80\npop ebx\npop eax\nmov ecx, [buffer]\n"
-			"mov [eax], cx\nret\n\n", syscall_sys_read, syscall_stdin);
+			"push eax\npush ebx\npush ecx\npush edx\nmov eax, %d\nmov ebx, %d\nmov ecx, buffer\n"
+			"mov edx, 1\nint 0x80\nmov ecx, [buffer]\n"
+			"mov [eax], cx\npop edx\npop ecx\npop ebx\npop eax\nret\n\n", syscall_sys_read, syscall_stdin);
 
 	// Execution starts at this point
 	str_append(&output, "_start:\nmov eax, array\n");
