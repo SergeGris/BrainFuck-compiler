@@ -73,10 +73,10 @@ int tokens_to_asm_x86_linux(Command* const source, const int source_length,
 		switch (source[i].token) {
 		case T_INC:
 			if (source[i].value > 0) {
-				str_append(&output, "mov bx, %d\nadd [eax], bx\n", source[i].value & 0xFF);
+				str_append(&output, "mov bl, %d\nadd [eax], bl\n", source[i].value & 0xFF);
 			}
 			else if (source[i].value < 0) {
-				str_append(&output, "mov bx, %d\nsub [eax], bx\n", (-source[i].value) & 0xFF);
+				str_append(&output, "mov bl, %d\nsub [eax], bl\n", (-source[i].value) & 0xFF);
 			}
 			else {
 				// Command has no effect
