@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
 	// Interpret symbols
 	Command *tokenized_source;
-	int tokenized_source_length = 0;
+	unsigned int tokenized_source_length = 0;
 	int err = tokenize(source, &tokenized_source, &tokenized_source_length);
 	if (err != 0) {
 		printf("Error %d\n", err);

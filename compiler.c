@@ -5,7 +5,7 @@
 #include "compile_elf_x86_linux.h"
 
 static int write_text_file(const char* filename, const char* source,
-	const int source_length)
+	const unsigned int source_length)
 {
 	FILE* handle = fopen(filename, "w");
 	if (!handle) {
@@ -22,7 +22,7 @@ static int write_text_file(const char* filename, const char* source,
 }
 
 int compile_to_file(const char* filename, const FileType filetype,
-	Command* const source, const int source_length)
+	Command* const source, const unsigned int source_length)
 {
 	char *instructions = NULL;
 	int instructions_length = 0;

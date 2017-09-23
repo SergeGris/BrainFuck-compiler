@@ -29,6 +29,6 @@ Token parse_token(const char symbol);
 int parse_value(const char symbol);
 char* strip_comments(char* const source);
 
-int tokenize(char* const source, Command** out_result, int* out_result_len);
+int tokenize(char* const source, Command** out_result, unsigned int* out_result_len);
 
 #endif

@@ -22,7 +22,7 @@ static int str_append(char** str, const char* format, ...)
 	va_start(arg_ptr, format);
 	vsprintf(formatted_str, format, arg_ptr);
 
-	const int old_length = (*str == NULL ? 0 : strlen(*str));
+	const unsigned int old_length = (*str == NULL ? 0 : strlen(*str));
 	char* new_str = calloc(old_length + strlen(formatted_str) + 1, sizeof(char));
 	if (new_str == NULL) {
 		// Error: Out of memory
@@ -40,8 +40,8 @@ static int str_append(char** str, const char* format, ...)
 	return 0;
 }
 
-int tokens_to_asm_x86_linux(Command* const source, const int source_length,
-	char** final_output, int* final_output_length)
+int tokens_to_asm_x86_linux(Command* const source, const unsigned int source_length,
+	char** final_output, unsigned int* final_output_length)
 {
 	char* output = NULL;
 	*final_output = NULL;
@@ -69,7 +69,7 @@ int tokens_to_asm_x86_linux(Command* const source, const int source_length,
 
 	// Convert tokens to machine code
 	int errorcode = 0;
-	for (int i = 0; i < source_length && errorcode == 0; i++) {
+	for (unsigned int i = 0; i < source_length && errorcode == 0; i++) {
 		switch (source[i].token) {
 		case T_INC:
 			if (source[i].value > 0) {

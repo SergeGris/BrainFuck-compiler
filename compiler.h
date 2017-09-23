@@ -14,6 +14,6 @@ static const int DATA_ARRAY_SIZE = 30000;
 
 /* Compiles tokenized source to executable */
 int compile_to_file(const char* filename, const FileType filetype,
-	Command* const source, const int source_length);
+	Command* const source, const unsigned int source_length);
 
 #endif

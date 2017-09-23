@@ -43,7 +43,7 @@ int parse_value(const char symbol)
 
 char* strip_comments(char* const source)
 {
-	const int size = strlen(source);
+	const unsigned int size = strlen(source);
 	char* result = malloc((size + 1) * sizeof(char));
 	if (result == NULL) {
 		// Error: Out of memory
@@ -59,9 +59,9 @@ char* strip_comments(char* const source)
 	return result;
 }
 
-static int append_to_array(const Command cmd, Command** out_result, int* out_result_len)
+static int append_to_array(const Command cmd, Command** out_result, unsigned int* out_result_len)
 {
-	int new_size = *out_result_len + 1;
+	unsigned int new_size = *out_result_len + 1;
 	Command *tmp = realloc(*out_result, new_size * sizeof(Command));
 	if (tmp == NULL) {
 		// Error: Out of memory
@@ -74,7 +74,7 @@ static int append_to_array(const Command cmd, Command** out_result, int* out_res
 	return 0;
 }
 
-int tokenize(char* const source, Command** out_result, int* out_result_len)
+int tokenize(char* const source, Command** out_result, unsigned int* out_result_len)
 {
 	// Count [ and ] commands. Difference should be 0 at the end of the program, so
 	// that all jumps have a matching label
@@ -84,7 +84,7 @@ int tokenize(char* const source, Command** out_result, int* out_result_len)
 	// Initialize final result
 	*out_result_len = 0;
 	*out_result = NULL;
-	int result_len = 0;
+	unsigned int result_len = 0;
 	Command *result = NULL;
 
 	// Strip comments from the source
