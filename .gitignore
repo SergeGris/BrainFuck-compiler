@@ -1,4 +1,7 @@
 *.o
 *.asm
 hello-world
+print-a
+infinite-loop
+cat
 brainfuck
