@@ -49,20 +49,20 @@ int tokens_to_asm_x86_linux(Command* const source, const unsigned int source_len
 
 	// Initialize variables
 	str_append(&output, "bits 32\n\n");
-	str_append(&output, "section .data\nglobal array\narray times %d db 0\nbuffer dd 0\n\n", DATA_ARRAY_SIZE);
+	str_append(&output, "section .data\nglobal array\narray times %d db 0\nbuffer db 0\n\n", DATA_ARRAY_SIZE);
 
 	// Beginning of the code block
 	str_append(&output, "section .text\nglobal _start\n\n");
 
 	// Subroutines for I/O
 	str_append(&output, "print_char:\n"
-			"push eax\npush ebx\npush ecx\npush edx\nxor ebx, ebx\nmov bl, [eax]\nmov [buffer], ebx\n"
+			"push eax\npush ebx\npush ecx\npush edx\nxor ebx, ebx\nmov bl, [eax]\nmov [buffer], bl\n"
 			"mov eax, %d\nmov ebx, %d\nmov ecx, buffer\nmov edx, 1\nint 0x80\n"
 			"pop edx\npop ecx\npop ebx\npop eax\nret\n\n", syscall_sys_write, syscall_stdout);
 	str_append(&output, "input_char:\n"
 			"push eax\npush ebx\npush ecx\npush edx\nmov eax, %d\nmov ebx, %d\nmov ecx, buffer\n"
-			"mov edx, 1\nint 0x80\nmov ecx, [buffer]\n"
-			"mov [eax], cl\npop edx\npop ecx\npop ebx\npop eax\nret\n\n", syscall_sys_read, syscall_stdin);
+			"mov edx, 1\nint 0x80\npop edx\npop ecx\npop ebx\npop eax\nmov cl, [buffer]\n"
+			"mov [eax], cl\nret\n\n", syscall_sys_read, syscall_stdin);
 
 	// Execution starts at this point
 	str_append(&output, "_start:\nmov eax, array\n");
