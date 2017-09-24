@@ -10,7 +10,7 @@ typedef enum {
 } FileType;
 
 // Maximum size of the data array
-static const int DATA_ARRAY_SIZE = 30000;
+#define DATA_ARRAY_SIZE 30000
 
 /* Compiles tokenized source to executable */
 int compile_to_file(const char* filename, const FileType filetype,
