@@ -8,8 +8,8 @@ int tokens_to_machinecode_x86_linux(Command* const source, const unsigned int so
 	char** output, unsigned int* output_length);
 
 /* Compiles machine code to ELF executable */
-int write_elf_file_x86(const char* filename, const char* source,
-	const unsigned int source_length);
+int tokens_to_elf_x86_linux(Command* const source, const unsigned int source_length,
+	char** output, unsigned int* output_length);
 
 
 #endif

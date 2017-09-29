@@ -20,7 +20,8 @@ static unsigned int count_labels(Command* const source, const unsigned int sourc
 static int buffer_append(char** output, unsigned int* output_length,
 	const char* input, const unsigned int input_length)
 {
-
+	// TODO
+	return 202;
 }
 
 int tokens_to_machinecode_x86_linux(Command* const source, const unsigned int source_length,
@@ -174,8 +175,8 @@ int tokens_to_machinecode_x86_linux(Command* const source, const unsigned int so
 	return 202;
 }
 
-int write_elf_file_x86(const char* filename, const char* source,
-	const unsigned int source_length)
+int tokens_to_elf_x86_linux(Command* const source, const unsigned int source_length,
+	char** output, unsigned int* output_length)
 {
 	// Error: Not implemented
 	return 202;
