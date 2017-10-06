@@ -186,3 +186,93 @@ int tokenize(char* const source, Command** out_result, unsigned int* out_result_
 
 	return 0;
 }
+
+int tokenize_and_optimize(char* const source, ProgramSource* out_result, const int level)
+{
+	out_result->tokens = NULL;
+	out_result->length = 0;
+
+	Command *tokenized_source;
+	unsigned int tokenized_source_length = 0;
+	int err = tokenize(source, &tokenized_source, &tokenized_source_length);
+	if (err != 0) {
+		return err;
+	}
+	int no_print_commands = 0, no_input_commands = 0;
+
+	// Level 0: Return code as is
+
+	// Level 1:
+	// Remove inactive loops (no +-, before the loop start)
+	// Check if there are no print commands
+	// Check if there are no input commands
+	if (level >= 1) {
+		// Remove inactive loops
+		const int max_passes = 10;
+		int finished = 0;
+		for (int round = 0; round < max_passes && !finished; round++) {
+			int inactive_loop_index = -1;
+			for (unsigned int i = 0; i < tokenized_source_length; i++) {
+				const Command current = tokenized_source[i];
+				if (current.token == T_INC || current.token == T_READ) {
+					// Not inactive
+					finished = 1;
+					break;
+				}
+				else if (current.token == T_LABEL) {
+					inactive_loop_index = current.value;
+					break;
+				}
+			}
+			int inside_loop = 0;
+			for (unsigned int i = 0; i < tokenized_source_length; i++) {
+				const Command current = tokenized_source[i];
+				if (current.token == T_LABEL && current.value == inactive_loop_index) {
+					inside_loop = 1;
+				}
+				if (inside_loop) {
+					tokenized_source[i].token = T_COMMENT;
+					if (current.token == T_JUMP && current.value == inactive_loop_index) {
+						break;
+					}
+				}
+			}
+		}
+
+		// Find input and print commands
+		int found_input = 0, found_print = 0;
+		for (unsigned int i = 0; i < tokenized_source_length; i++) {
+			const Command current = tokenized_source[i];
+			if (current.token == T_READ) {
+				found_input = 1;
+			}
+			else if (current.token == T_PRINT) {
+				found_print = 1;
+			}
+			if (found_input && found_print) {
+				break;
+			}
+		}
+		no_print_commands = !found_print;
+		no_input_commands = !found_input;
+	}
+	// TODO: Level 2:
+	// If no print or input commands, program has no effect
+	// => Either remove everything or replace with [] if infinite loop
+	if (level >= 2) {
+		// Error: Not implemented
+		err = 103;
+	}
+
+	if (err != 0) {
+		free(tokenized_source);
+		return err;
+	}
+	out_result->tokens = tokenized_source;
+	out_result->length = tokenized_source_length;
+	out_result->no_print_commands = no_print_commands;
+	out_result->no_input_commands = no_input_commands;
+
+	return 0;
+
+}

@@ -24,7 +24,7 @@ static int buffer_append(char** output, unsigned int* output_length,
 	return 202;
 }
 
-int tokens_to_machinecode_x86_linux(Command* const source, const unsigned int source_length,
+int tokens_to_machinecode_x86_linux(ProgramSource* const source,
 	char** final_output, unsigned int* final_output_length)
 {
 	char* output = NULL;
@@ -99,43 +99,44 @@ int tokens_to_machinecode_x86_linux(Command* const source, const unsigned int so
 
 	// Convert tokens to machine code
 	int errorcode = 0;
-	for (unsigned int i = 0; i < source_length && errorcode == 0; i++) {
-		switch (source[i].token) {
+	for (unsigned int i = 0; i < source->length && errorcode == 0; i++) {
+		const Command current = source->tokens[i];
+		switch (current.token) {
 		case T_INC:
-			if (source[i].value == 0) {
+			if (current.value == 0) {
 				// Command has no effect
 				continue;
 			}
 			else {
-				const char value = (source[i].value > 0 ? source[i].value : -source[i].value) & 0xFF;
-				const char cmd1 = source[i].value > 0 ? 0x00 : 0x28;
+				const char value = (current.value > 0 ? current.value : -current.value) & 0xFF;
+				const char cmd1 = current.value > 0 ? 0x00 : 0x28;
 				char commands[] = {value, 0xB3, 0x18, cmd1};
 				buffer_append(&output, &output_length, commands, sizeof(commands));
 			}
 			break;
 		case T_POINTER_INC:
-			if (source[i].value == 0) {
+			if (current.value == 0) {
 				// Command has no effect
 				continue;
 			}
 			else {
-				const char value = source[i].value > 0 ? source[i].value : -source[i].value;
+				const char value = current.value > 0 ? current.value : -current.value;
 				const char v1 = value & 0XFF;
 				const char v2 = (value >> 8) & 0xFF;
 				const char v3 = (value >> 16) & 0xFF;
 				const char v4 = (value >> 24) & 0xFF;
-				const char cmd1 = source[i].value > 0 ? 0x01 : 0x29;
+				const char cmd1 = current.value > 0 ? 0x01 : 0x29;
 				char commands[] = {v1, 0xBB, v3, v2, cmd1, v4, 0x00, 0xD8};
 				buffer_append(&output, &output_length, commands, sizeof(commands));
 			}
 			break;
 		case T_LABEL:
 			//str_append(&output, "\nlabel_%d_begin:\ncmp byte [eax], 0\nje label_%d_end\n",
-				//source[i].value, source[i].value);
+				//current.value, current.value);
 			break;
 		case T_JUMP:
 			//str_append(&output, "\nlabel_%d_end:\ncmp byte [eax], 0\njne label_%d_begin\n",
-				//source[i].value, source[i].value);
+				//current.value, current.value);
 			break;
 		case T_READ:
 			// relative call = E8
@@ -175,9 +176,57 @@ int tokens_to_machinecode_x86_linux(Command* const source, const unsigned int so
 	return 202;
 }
 
-int tokens_to_elf_x86_linux(Command* const source, const unsigned int source_length,
-	char** output, unsigned int* output_length)
+int tokens_to_elf_x86_linux(ProgramSource* const source,
+	char** final_output, unsigned int* final_output_length)
 {
+	char* output = NULL;
+	unsigned int output_length = 0;
+	*final_output = NULL;
+	*final_output_length = 0;
+
+	int errorcode = 0;
+
+	// Construct file header
+	char file_header[0x32] = {
+		0x7F, 0x45, 0x4C, 0x46,
+		0x01,						// 32-bit format
+		0x01,						// Little endian
+		0x01,
+		0x00,						// Target platform
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x02, 0x00,					// File type = executable
+		0x03, 0x00,					// x86 instruction set
+		0x01, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,		// TODO: Program entry point address
+		0x34, 0x00, 0x00, 0x00,		// Address of program header
+		0x00, 0x00, 0x00, 0x00,		// TODO: Address of section header
+		0x00, 0x00, 0x00, 0x00,		// TODO: Flags for the target platform
+		0x52, 0x00,					// Size of file header
+		0x00, 0x00,					// TODO: Size of program header
+		0x00, 0x00,					// TODO: Number of entries in program header
+		0x00, 0x00,					// TODO: Size of section header
+		0x00, 0x00,					// TODO: Number of entries in section header
+		0x00, 0x00					// TODO: Index of section header with section names
+	};
+
+	// Construct program header
+
+	// Construct section header
+
+
+	// Write machine code
+
+
+
+	if (errorcode != 0) {
+		free(output);
+		return errorcode;
+	}
+
+	*final_output = output;
+	*final_output_length = output_length;
+
 	// Error: Not implemented
 	return 202;
 }

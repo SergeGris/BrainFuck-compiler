@@ -40,7 +40,7 @@ static int str_append(char** str, const char* format, ...)
 	return 0;
 }
 
-int tokens_to_asm_x86_linux(Command* const source, const unsigned int source_length,
+int tokens_to_asm_x86_linux(ProgramSource* const source,
 	char** final_output, unsigned int* final_output_length)
 {
 	char* output = NULL;
@@ -55,39 +55,44 @@ int tokens_to_asm_x86_linux(Command* const source, const unsigned int source_len
 	str_append(&output, "section .text\nglobal _start\n\n");
 
 	// Subroutines for I/O
-	str_append(&output, "print_char:\n"
+	if (!source->no_print_commands) {
+		str_append(&output, "print_char:\n"
 			"push eax\npush ebx\npush ecx\npush edx\nxor ebx, ebx\nmov bl, [eax]\nmov [buffer], bl\n"
 			"mov eax, %d\nmov ebx, %d\nmov ecx, buffer\nmov edx, 1\nint 0x80\n"
 			"pop edx\npop ecx\npop ebx\npop eax\nret\n\n", syscall_sys_write, syscall_stdout);
-	str_append(&output, "input_char:\n"
+	}
+	if (!source->no_input_commands) {
+		str_append(&output, "input_char:\n"
 			"push eax\npush ebx\npush ecx\npush edx\nmov eax, %d\nmov ebx, %d\nmov ecx, buffer\n"
 			"mov edx, 1\nint 0x80\npop edx\npop ecx\npop ebx\npop eax\nmov cl, [buffer]\n"
 			"mov [eax], cl\nret\n\n", syscall_sys_read, syscall_stdin);
+	}
 
 	// Execution starts at this point
 	str_append(&output, "_start:\nmov eax, array\n");
 
 	// Convert tokens to machine code
 	int errorcode = 0;
-	for (unsigned int i = 0; i < source_length && errorcode == 0; i++) {
-		switch (source[i].token) {
+	for (unsigned int i = 0; i < source->length && errorcode == 0; i++) {
+		const Command current = source->tokens[i];
+		switch (current.token) {
 		case T_INC:
-			if (source[i].value > 0) {
-				str_append(&output, "mov bl, %d\nadd [eax], bl\n", source[i].value & 0xFF);
+			if (current.value > 0) {
+				str_append(&output, "mov bl, %d\nadd [eax], bl\n", current.value & 0xFF);
 			}
-			else if (source[i].value < 0) {
-				str_append(&output, "mov bl, %d\nsub [eax], bl\n", (-source[i].value) & 0xFF);
+			else if (current.value < 0) {
+				str_append(&output, "mov bl, %d\nsub [eax], bl\n", (-current.value) & 0xFF);
 			}
 			else {
 				// Command has no effect
 			}
 			break;
 		case T_POINTER_INC:
-			if (source[i].value > 0) {
-				str_append(&output, "mov ebx, %d\nadd eax, ebx\n", source[i].value);
+			if (current.value > 0) {
+				str_append(&output, "mov ebx, %d\nadd eax, ebx\n", current.value);
 			}
-			else if (source[i].value < 0) {
-				str_append(&output, "mov ebx, %d\nsub eax, ebx\n", -source[i].value);
+			else if (current.value < 0) {
+				str_append(&output, "mov ebx, %d\nsub eax, ebx\n", -current.value);
 			}
 			else {
 				// Command has no effect
@@ -95,17 +100,29 @@ int tokens_to_asm_x86_linux(Command* const source, const unsigned int source_len
 			break;
 		case T_LABEL:
 			str_append(&output, "\nlabel_%d_begin:\ncmp byte [eax], 0\nje label_%d_end\n",
-				source[i].value, source[i].value);
+				current.value, current.value);
 			break;
 		case T_JUMP:
 			str_append(&output, "\nlabel_%d_end:\ncmp byte [eax], 0\njne label_%d_begin\n",
-				source[i].value, source[i].value);
+				current.value, current.value);
 			break;
 		case T_READ:
-			str_append(&output, "call input_char\n");
+			if (source->no_input_commands) {
+				// Error: Unexpected token
+				errorcode = 202;
+			}
+			else {
+				str_append(&output, "call input_char\n");
+			}
 			break;
 		case T_PRINT:
-			str_append(&output, "call print_char\n");
+			if (source->no_print_commands) {
+				// Error: Unexpected token
+				errorcode = 202;
+			}
+			else {
+				str_append(&output, "call print_char\n");
+			}
 			break;
 		default:
 			break;

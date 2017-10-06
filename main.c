@@ -38,6 +38,7 @@ int main(int argc, char **argv)
 	}
 	char* in_filename = argv[1];
 	char* out_filename = argv[2];
+	int optimization_level = 1;
 
 	// Open file
 	char* source = read_file(in_filename);
@@ -47,9 +48,8 @@ int main(int argc, char **argv)
 	}
 
 	// Interpret symbols
-	Command *tokenized_source;
-	unsigned int tokenized_source_length = 0;
-	int err = tokenize(source, &tokenized_source, &tokenized_source_length);
+	ProgramSource tokenized_source;
+	int err = tokenize_and_optimize(source, &tokenized_source, optimization_level);
 	if (err != 0) {
 		printf("Error %d\n", err);
 		free(source);
@@ -57,11 +57,11 @@ int main(int argc, char **argv)
 	}
 
 	// Write result file
-	err = compile_to_file(out_filename, FILETYPE_ASSEMBLY, tokenized_source, tokenized_source_length);
+	err = compile_to_file(out_filename, FILETYPE_ASSEMBLY, &tokenized_source);
 	if (err != 0) {
 		printf("Error %d\n", err);
 	}
-	free(tokenized_source);
+	free(tokenized_source.tokens);
 	free(source);
 
 	return err;

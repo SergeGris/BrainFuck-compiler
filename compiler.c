@@ -23,16 +23,16 @@ static int write_binary_file(const char* filename, const char* source,
 }
 
 int compile_to_file(const char* filename, const FileType filetype,
-	Command* const source, const unsigned int source_length)
+	ProgramSource* const source)
 {
 	char *instructions = NULL;
 	unsigned int instructions_length = 0;
 	int err = 0;
 	if (filetype == FILETYPE_ELF) {
-		err = tokens_to_elf_x86_linux(source, source_length, &instructions, &instructions_length);
+		err = tokens_to_elf_x86_linux(source, &instructions, &instructions_length);
 	}
 	else if (filetype == FILETYPE_ASSEMBLY) {
-		err = tokens_to_asm_x86_linux(source, source_length, &instructions, &instructions_length);
+		err = tokens_to_asm_x86_linux(source, &instructions, &instructions_length);
 	}
 	else {
 		// Error: Not implemented

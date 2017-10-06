@@ -14,6 +14,6 @@ typedef enum {
 
 /* Compiles tokenized source to executable */
 int compile_to_file(const char* filename, const FileType filetype,
-	Command* const source, const unsigned int source_length);
+	ProgramSource* const source);
 
 #endif
