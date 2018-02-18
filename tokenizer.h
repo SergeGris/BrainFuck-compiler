@@ -38,9 +38,9 @@ typedef struct {
 
 Token parse_token(const char symbol);
 int parse_value(const char symbol);
-char* strip_comments(char* const source);
+char* strip_comments(const char* const source);
 
-int tokenize(char* const source, Command** out_result, unsigned int* out_result_len);
-int tokenize_and_optimize(char* const source, ProgramSource* out_result, const int level);
+int tokenize(const char* const source, Command** out_result, unsigned int* out_result_len);
+int tokenize_and_optimize(const char* const source, ProgramSource* out_result, const int level);
 
 #endif

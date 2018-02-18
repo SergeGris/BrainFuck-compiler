@@ -1,7 +1,8 @@
 *.o
 *.asm
-hello-world
-print-a
-infinite-loop
-cat
+examples/hello-world
+examples/print-a
+examples/infinite-loop
+examples/cat
+tests/tests
 brainfuck

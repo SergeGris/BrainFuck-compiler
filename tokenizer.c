@@ -41,7 +41,7 @@ int parse_value(const char symbol)
 	}
 }
 
-char* strip_comments(char* const source)
+char* strip_comments(const char* const source)
 {
 	const unsigned int size = strlen(source);
 	char* result = malloc((size + 1) * sizeof(char));
@@ -74,7 +74,7 @@ static int append_to_array(const Command cmd, Command** out_result, unsigned int
 	return 0;
 }
 
-int tokenize(char* const source, Command** out_result, unsigned int* out_result_len)
+int tokenize(const char* const source, Command** out_result, unsigned int* out_result_len)
 {
 	// Count [ and ] commands. Difference should be 0 at the end of the program, so
 	// that all jumps have a matching label
@@ -187,7 +187,7 @@ int tokenize(char* const source, Command** out_result, unsigned int* out_result_
 	return 0;
 }
 
-int tokenize_and_optimize(char* const source, ProgramSource* out_result, const int level)
+int tokenize_and_optimize(const char* const source, ProgramSource* out_result, const int level)
 {
 	out_result->tokens = NULL;
 	out_result->length = 0;

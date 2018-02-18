@@ -7,7 +7,7 @@ _OBJ = main.o tokenizer.o compiler.o compile_asm_x86_linux.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 DEPS = tokenizer.h compiler.h compile_asm_x86_linux.h
 
-all: main
+all: main tests
 
 $(ODIR)/%.o: %.c $(DEPS)
 	mkdir -p $(ODIR)
@@ -19,7 +19,10 @@ main: $(OBJ)
 examples:
 	cd examples && $(MAKE) -B
 
-.PHONY: clean examples all
+tests:
+	cd tests && $(MAKE) -B
+
+.PHONY: clean examples all tests
 
 clean:
 	rm -rf $(ODIR)
