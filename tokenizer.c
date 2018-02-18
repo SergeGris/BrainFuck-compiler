@@ -187,17 +187,20 @@ int tokenize(const char* const source, Command** out_result, unsigned int* out_r
 	return 0;
 }
 
-int tokenize_and_optimize(const char* const source, ProgramSource* out_result, const int level)
-{
-	out_result->tokens = NULL;
-	out_result->length = 0;
 
-	Command *tokenized_source;
-	unsigned int tokenized_source_length = 0;
-	int err = tokenize(source, &tokenized_source, &tokenized_source_length);
-	if (err != 0) {
-		return err;
+int optimize(const Command* const tokens, const unsigned int tokens_len,
+	ProgramSource* out_result, const int level)
+{
+	int err = 0;
+
+	Command* input_tokens = malloc(tokens_len * sizeof(Command));
+	if (input_tokens == NULL) {
+		// Error: Out of memory
+		return 101;
 	}
+	unsigned int input_len = tokens_len;
+	memcpy(input_tokens, tokens, tokens_len * sizeof(Command));
+
 	bool no_print_commands = false, no_input_commands = false;
 
 	// Level 0: Return code as is
@@ -212,8 +215,8 @@ int tokenize_and_optimize(const char* const source, ProgramSource* out_result, c
 		bool finished = false;
 		for (int round = 0; round < max_passes && !finished; round++) {
 			int inactive_loop_index = -1;
-			for (unsigned int i = 0; i < tokenized_source_length; i++) {
-				const Command current = tokenized_source[i];
+			for (unsigned int i = 0; i < input_len; i++) {
+				const Command current = input_tokens[i];
 				if (current.token == T_INC || current.token == T_INPUT) {
 					// Not inactive
 					finished = true;
@@ -225,13 +228,13 @@ int tokenize_and_optimize(const char* const source, ProgramSource* out_result, c
 				}
 			}
 			bool inside_loop = false;
-			for (unsigned int i = 0; i < tokenized_source_length; i++) {
-				const Command current = tokenized_source[i];
+			for (unsigned int i = 0; i < input_len; i++) {
+				const Command current = input_tokens[i];
 				if (current.token == T_LABEL && current.value == inactive_loop_index) {
 					inside_loop = true;
 				}
 				if (inside_loop) {
-					tokenized_source[i].token = T_COMMENT;
+					input_tokens[i].token = T_COMMENT;
 					if (current.token == T_JUMP && current.value == inactive_loop_index) {
 						break;
 					}
@@ -241,8 +244,8 @@ int tokenize_and_optimize(const char* const source, ProgramSource* out_result, c
 
 		// Find input and print commands
 		bool found_input = false, found_print = false;
-		for (unsigned int i = 0; i < tokenized_source_length; i++) {
-			const Command current = tokenized_source[i];
+		for (unsigned int i = 0; i < input_len; i++) {
+			const Command current = input_tokens[i];
 			if (current.token == T_INPUT) {
 				found_input = true;
 			}
@@ -265,14 +268,48 @@ int tokenize_and_optimize(const char* const source, ProgramSource* out_result, c
 	}
 
 	if (err != 0) {
-		free(tokenized_source);
+		free(input_tokens);
 		return err;
 	}
-	out_result->tokens = tokenized_source;
-	out_result->length = tokenized_source_length;
+
+	// Compact result by stripping out comments
+	out_result->tokens = malloc(input_len * sizeof(Command));
+	if (out_result->tokens == NULL) {
+		// Error: Out of memory
+		free(input_tokens);
+		return 101;
+	}
+
+	unsigned int index = 0;
+	for (unsigned int i = 0; i < input_len; i++) {
+		if (input_tokens[i].token != T_COMMENT) {
+			out_result->tokens[index++] = input_tokens[i];
+		}
+	}
+	out_result->length = index;
 	out_result->no_print_commands = no_print_commands;
 	out_result->no_input_commands = no_input_commands;
 
-	return 0;
+	free(input_tokens);
 
+	return 0;
+}
+
+
+int tokenize_and_optimize(const char* const source, ProgramSource* out_result, const int level)
+{
+	out_result->tokens = NULL;
+	out_result->length = 0;
+
+	Command *tokenized_source;
+	unsigned int tokenized_source_length = 0;
+	int err = tokenize(source, &tokenized_source, &tokenized_source_length);
+	if (err != 0) {
+		return err;
+	}
+
+	err = optimize(tokenized_source, tokenized_source_length, out_result, level);
+	free(tokenized_source);
+
+	return err;
 }
