@@ -1,6 +1,8 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
+#include <stdbool.h>
+
 /*
 	For optimized result, Brainfuck code is first converted to token-value pairs:
 	increment, amount
@@ -30,8 +32,8 @@ typedef struct {
 typedef struct {
 	Command* tokens;
 	unsigned int length;
-	int no_print_commands;
-	int no_input_commands;
+	bool no_print_commands;
+	bool no_input_commands;
 } ProgramSource;
 
 Token parse_token(const char symbol);

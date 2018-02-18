@@ -198,7 +198,7 @@ int tokenize_and_optimize(char* const source, ProgramSource* out_result, const i
 	if (err != 0) {
 		return err;
 	}
-	int no_print_commands = 0, no_input_commands = 0;
+	bool no_print_commands = false, no_input_commands = false;
 
 	// Level 0: Return code as is
 
@@ -209,14 +209,14 @@ int tokenize_and_optimize(char* const source, ProgramSource* out_result, const i
 	if (level >= 1) {
 		// Remove inactive loops
 		const int max_passes = 10;
-		int finished = 0;
+		bool finished = false;
 		for (int round = 0; round < max_passes && !finished; round++) {
 			int inactive_loop_index = -1;
 			for (unsigned int i = 0; i < tokenized_source_length; i++) {
 				const Command current = tokenized_source[i];
 				if (current.token == T_INC || current.token == T_INPUT) {
 					// Not inactive
-					finished = 1;
+					finished = true;
 					break;
 				}
 				else if (current.token == T_LABEL) {
@@ -224,11 +224,11 @@ int tokenize_and_optimize(char* const source, ProgramSource* out_result, const i
 					break;
 				}
 			}
-			int inside_loop = 0;
+			bool inside_loop = false;
 			for (unsigned int i = 0; i < tokenized_source_length; i++) {
 				const Command current = tokenized_source[i];
 				if (current.token == T_LABEL && current.value == inactive_loop_index) {
-					inside_loop = 1;
+					inside_loop = true;
 				}
 				if (inside_loop) {
 					tokenized_source[i].token = T_COMMENT;
@@ -240,14 +240,14 @@ int tokenize_and_optimize(char* const source, ProgramSource* out_result, const i
 		}
 
 		// Find input and print commands
-		int found_input = 0, found_print = 0;
+		bool found_input = false, found_print = false;
 		for (unsigned int i = 0; i < tokenized_source_length; i++) {
 			const Command current = tokenized_source[i];
 			if (current.token == T_INPUT) {
-				found_input = 1;
+				found_input = true;
 			}
 			else if (current.token == T_PRINT) {
-				found_print = 1;
+				found_print = true;
 			}
 			if (found_input && found_print) {
 				break;
