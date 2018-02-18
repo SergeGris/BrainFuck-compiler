@@ -5,8 +5,7 @@
 
 // Output file type
 typedef enum {
-	FILETYPE_ASSEMBLY,
-	FILETYPE_ELF
+	FILETYPE_ASSEMBLY
 } FileType;
 
 // Maximum size of the data array

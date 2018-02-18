@@ -3,9 +3,9 @@ LDIR =
 ODIR = obj
 FLAGS = -std=c99 -O2 -Wall -lm
 
-_OBJ = main.o tokenizer.o compiler.o compile_asm_x86_linux.o compile_elf_x86_linux.o
+_OBJ = main.o tokenizer.o compiler.o compile_asm_x86_linux.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
-DEPS = tokenizer.h compiler.h compile_asm_x86_linux.h compile_elf_x86_linux.h
+DEPS = tokenizer.h compiler.h compile_asm_x86_linux.h
 
 all: main
 

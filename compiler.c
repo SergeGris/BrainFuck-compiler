@@ -3,7 +3,6 @@
 
 #include "compiler.h"
 #include "compile_asm_x86_linux.h"
-#include "compile_elf_x86_linux.h"
 
 static int write_binary_file(const char* filename, const char* source,
 	const unsigned int source_length)
@@ -28,10 +27,7 @@ int compile_to_file(const char* filename, const FileType filetype,
 	char *instructions = NULL;
 	unsigned int instructions_length = 0;
 	int err = 0;
-	if (filetype == FILETYPE_ELF) {
-		err = tokens_to_elf_x86_linux(source, &instructions, &instructions_length);
-	}
-	else if (filetype == FILETYPE_ASSEMBLY) {
+	if (filetype == FILETYPE_ASSEMBLY) {
 		err = tokens_to_asm_x86_linux(source, &instructions, &instructions_length);
 	}
 	else {
