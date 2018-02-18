@@ -16,7 +16,7 @@ typedef enum {
 	T_POINTER_INC,
 	T_LABEL,
 	T_JUMP,
-	T_READ,
+	T_INPUT,
 	T_PRINT
 } Token;
 

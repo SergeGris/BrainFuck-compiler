@@ -106,7 +106,7 @@ int tokens_to_asm_x86_linux(ProgramSource* const source,
 			str_append(&output, "\nlabel_%d_end:\ncmp byte [eax], 0\njne label_%d_begin\n",
 				current.value, current.value);
 			break;
-		case T_READ:
+		case T_INPUT:
 			if (source->no_input_commands) {
 				// Error: Unexpected token
 				errorcode = 202;

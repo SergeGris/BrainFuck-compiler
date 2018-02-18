@@ -18,7 +18,7 @@ Token parse_token(const char symbol)
 	case ']':
 		return T_JUMP;
 	case ',':
-		return T_READ;
+		return T_INPUT;
 	case '.':
 		return T_PRINT;
 	default:
@@ -214,7 +214,7 @@ int tokenize_and_optimize(char* const source, ProgramSource* out_result, const i
 			int inactive_loop_index = -1;
 			for (unsigned int i = 0; i < tokenized_source_length; i++) {
 				const Command current = tokenized_source[i];
-				if (current.token == T_INC || current.token == T_READ) {
+				if (current.token == T_INC || current.token == T_INPUT) {
 					// Not inactive
 					finished = 1;
 					break;
@@ -243,7 +243,7 @@ int tokenize_and_optimize(char* const source, ProgramSource* out_result, const i
 		int found_input = 0, found_print = 0;
 		for (unsigned int i = 0; i < tokenized_source_length; i++) {
 			const Command current = tokenized_source[i];
-			if (current.token == T_READ) {
+			if (current.token == T_INPUT) {
 				found_input = 1;
 			}
 			else if (current.token == T_PRINT) {
