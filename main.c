@@ -1,68 +1,74 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "tokenizer.h"
 #include "compiler.h"
 
-char* read_file(const char* filename)
+char *read_file(const char *filename)
 {
-	char* buffer = NULL;
-	int length = 0;
-	FILE* handle = fopen(filename, "rb");
+    char *buffer = NULL;
+    int length = 0;
+    FILE *handle = fopen(filename, "rb");
 
-	if (handle) {
-		fseek(handle, 0, SEEK_END);
-		length = ftell (handle);
-		fseek(handle, 0, SEEK_SET);
-		buffer = malloc((length + 1) * sizeof(char));
-		if (buffer) {
-			int result = fread(buffer, sizeof(char), length, handle);
-			if (result != length) {
-				// Error: Reading failed
-				free(buffer);
-				return NULL;
-			}
-			buffer[length] = 0;
-		}
-		fclose(handle);
-	}
-
-	return buffer;
+    if (handle)
+    {
+        fseek(handle, 0, SEEK_END);
+        length = ftell(handle);
+        fseek(handle, 0, SEEK_SET);
+        buffer = malloc((length + 1) * sizeof(char));
+        if (buffer)
+        {
+            int result = fread(buffer, sizeof(char), length, handle);
+            if (result != length)
+            {   // Error: Reading failed
+                free(buffer);
+                return NULL;
+            }
+            buffer[length] = 0;
+        }
+        fclose(handle);
+    }
+    return buffer;
 }
 
 int main(int argc, char **argv)
 {
-	if (argc <= 2) {
-		printf("Usage: ./brainfuck [source filename] [output filename]\n");
-		exit(1);
-	}
-	char* in_filename = argv[1];
-	char* out_filename = argv[2];
-	int optimization_level = 1;
+    if (argc <= 2)
+    {
+        printf("Usage: ./brainfuck [source filename] [output filename]\n");
+        exit(1);
+    }
+    char *in_filename = argv[1];
+    char *out_filename = argv[2];
+    int optimization_level = 1;
 
-	// Open file
-	char* source = read_file(in_filename);
-	if (source == NULL) {
-		printf("Error: Failed to read file %s\n", in_filename);
-		exit(1);
-	}
+    // Open file
+    char *source = read_file(in_filename);
+    if (source == NULL)
+    {
+        printf("Error: Failed to read file %s\n", in_filename);
+        exit(1);
+    }
 
-	// Interpret symbols
-	ProgramSource tokenized_source;
-	int err = tokenize_and_optimize(source, &tokenized_source, optimization_level);
-	if (err != 0) {
-		printf("Error %d\n", err);
-		free(source);
-		exit(err);
-	}
+    // Interpret symbols
+    ProgramSource tokenized_source;
+    int err = tokenize_and_optimize(source, &tokenized_source, optimization_level);
+    if (err != 0)
+    {
+        printf("Error %d\n", err);
+        free(source);
+        exit(err);
+    }
 
-	// Write result file
-	err = compile_to_file(out_filename, FILETYPE_ASSEMBLY, &tokenized_source);
-	if (err != 0) {
-		printf("Error %d\n", err);
-	}
-	free(tokenized_source.tokens);
-	free(source);
+    // Write result file
+    err = compile_to_file(out_filename, FILETYPE_ASSEMBLY, &tokenized_source);
+    if (err != 0)
+    {
+        printf("Error %d\n", err);
+    }
+    free(tokenized_source.tokens);
+    free(source);
 
-	return err;
+    return err;
 }
