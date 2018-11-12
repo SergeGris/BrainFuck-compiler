@@ -6,3 +6,6 @@ examples/infinite-loop
 examples/cat
 tests/tests
 brainfuck
+
+compile_asm_x86_linux.h
+compile_asm_x86_linux.c
