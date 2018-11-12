@@ -13,7 +13,7 @@ Usage:
 
 If you see error that NASM is not installed, you should install it:
 
-    In Debian, Debian based:
+    In Debian and Debian based:
     
         sudo apt -y install nasm
         
