@@ -1,7 +1,7 @@
-IDIR = -I/usr/include -I..
-LDIR = -I/usr/lib
-ODIR = obj
-FLAGS = -std=c11 -O3 -Wall -lm -lcmocka
+IDIR =-I/usr/include -I..
+LDIR =-I/usr/lib
+ODIR =obj
+FLAGS =-std=c11 -O3 -Wall -lm -lcmocka
 
 _OBJ = tests.o test_tokenizer.o ../tokenizer.o ../compiler.o ../compile_asm_i386_linux.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
