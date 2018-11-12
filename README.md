@@ -11,7 +11,7 @@ Usage:
 
     ./bfc [source filename] [output filename]
 
-If you see error that NASM is not installed:
+If you see error that NASM is not installed, you should install it:
 
     In Debian, Debian based:
     
