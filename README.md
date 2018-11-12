@@ -13,10 +13,14 @@ Usage:
 
 If you see error that NASM is not installed:
 
-    In Debuan, Debian-based:
+    In Debian, Debian-based:
     
         sudo apt -y install nasm
         
     In Fedora and Rad-Hat based:
     
         sudo yum install nasm
+
+    In Arch Linux and Arch Linux-based:
+    
+        sudo pacman install nasm
