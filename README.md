@@ -12,7 +12,11 @@ Usage:
     ./bfc [source filename] [output filename]
 
 If you see error that NASM is not installed:
+
     In Debuan, Debian-based:
+    
         sudo apt -y install nasm
+        
     In Fedora and Rad-Hat based:
+    
         sudo yum install nasm
