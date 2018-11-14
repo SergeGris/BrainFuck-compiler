@@ -21,7 +21,7 @@ infinite-loop: infinite-loop.o
 %.o: $(ODIR)/%.asm
 	$(ASSEMBLER) $<
 
-$(ODIR)/%.asm: %.b $(COMPILER)
+$(ODIR)/%.asm: %.bf $(COMPILER)
 	mkdir -p $(ODIR)
 	$(COMPILER) $< $@
 
