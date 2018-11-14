@@ -1,7 +1,7 @@
 IDIR =
 LDIR =
 ODIR =obj
-FLAGS =-std=c11 -O3 -Wall -lm
+FLAGS =-std=c11 -O3 -Wall
 
 _OBJ = main.o tokenizer.o compiler.o compile_asm_i386_linux.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
@@ -14,8 +14,8 @@ $(ODIR)/%.o: %.c $(DEPS)
 	gcc -c -o $@ $< $(IDIR) $(LDIR) $(FLAGS)
 
 main: $(OBJ)
-	gcc brainfuck.c -o brainfuck $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
-        gcc bfc.c -o bfc $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
+	gcc -o brainfuck $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
+	gcc -o bfc $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
 examples:
 	cd examples && $(MAKE) -B
 
