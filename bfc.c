@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     }
     if (argc > 3)
     {
-        printf("\nCount of arguments can not be more than 2.\nIf you want to compile more than 1 BrainFuck source code, you have to ...\nFUCK!\nYou seriously want to compile more than 1 file?!\nIf yes - fuck you");
+        printf("\nCount of arguments can not be more than 2.\nIf you want to compile more than 1 BrainFuck source code, you have to ...\nFUCK!\nYou seriously want to compile more than 1 file?\nIf yes -- fuck you\n");
     }
     char *in_filename = argv[1];
     char *out_filename = argv[2];
