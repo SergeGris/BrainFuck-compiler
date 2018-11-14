@@ -14,8 +14,8 @@ $(ODIR)/%.o: %.c $(DEPS)
 	gcc -c -o $@ $< $(IDIR) $(LDIR) $(FLAGS)
 
 main: $(OBJ)
-	gcc -o brainfuck $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
-	gcc -o bfc $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
+	gcc brainfuck.c -o brainfuck $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
+	gcc bfc.c -o bfc $(OBJ) $(IDIR) $(LDIR) $(FLAGS)
 examples:
 	cd examples && $(MAKE) -B
 
