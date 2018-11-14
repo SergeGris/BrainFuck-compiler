@@ -33,7 +33,6 @@ int main(int argc, char **argv)
     system(compile);
     char asm[1024];
     strcpy(asm, nasmflags);
-    strcat(asm, " ");
     strcat(asm, out_filename);
     printf("%s\n", asm);
     system(asm);
