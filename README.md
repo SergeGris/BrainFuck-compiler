@@ -24,3 +24,5 @@ If you see error that NASM is not installed, you should install it:
     In Arch Linux and Arch Linux based:
     
         sudo pacman install nasm
+
+# In the future, I will change the NASM to GAS for greater portability.
