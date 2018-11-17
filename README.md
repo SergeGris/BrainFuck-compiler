@@ -25,4 +25,4 @@ If you see error that NASM is not installed, you should install it:
     
         sudo pacman install nasm
 
-# In the future, I will change the NASM to GAS for greater portability.
+### In the future, I will change the NASM to GAS for greater portability.
