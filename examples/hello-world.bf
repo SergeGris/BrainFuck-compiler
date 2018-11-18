@@ -35,7 +35,8 @@ Pointer :   ^
 >>.                     Cell #2 has value 72 which is 'H'
 >---.                   Subtract 3 from Cell #3 to get 101 which is 'e'
 +++++++..+++.           Likewise for 'llo' from Cell #3
->>.                     Cell #5 is 32 for the space
+>>++++++++++++.         Add 12 to Cell #5 gives us a comma
+------------.           Subtract 12 from Cell #5 for 32 to give a space
 <-.                     Subtract 1 from Cell #4 for 87 to give a 'W'
 <.                      Cell #3 was set to 'o' from the end of 'Hello'
 +++.------.--------.    Cell #3 for 'rl' and 'd'
