@@ -26,4 +26,4 @@ examples:
 
 clean:
 	rm -rf $(ODIR)
-	rm -f brainfuck
+	rm -f bft
