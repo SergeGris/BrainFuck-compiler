@@ -15,6 +15,9 @@ Usage, if you wanna to translate the BrainFuck code to NASM:
 
     ./bft [source filename] [output filename]
 
+#### notice: bf*c* mean BrainFuck Compiler
+#### notice: bf*t* mean BrainFuck Translator
+
 If you see error that NASM is not installed, you should install it:
 
     In Debian and Debian based:
