@@ -7,9 +7,13 @@ Current version of this compiler produces assembly source code,
 which is targeted to x86 CPU and uses Linux system calls.
 Assembly source code has to be compiled with NASM to create executable binary.
 
-Usage:
+Usage, if you wanna to compile the BrainFuck code:
 
     ./bfc [source filename] [output filename]
+    
+Usage, if you wanna to translate the BrainFuck code to NASM:
+
+    ./bft [source filename] [output filename]
 
 If you see error that NASM is not installed, you should install it:
 
@@ -25,4 +29,4 @@ If you see error that NASM is not installed, you should install it:
     
         sudo pacman install nasm
 
-### In the future, I will change the NASM to GAS for greater portability.
+###### In the future, I will change the NASM to GAS for greater portability.
