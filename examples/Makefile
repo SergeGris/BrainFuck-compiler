@@ -1,5 +1,5 @@
 ODIR = obj
-COMPILER=../brainfuck
+COMPILER=../bft
 ASSEMBLER=nasm -f elf32
 LINKER=ld -m elf_i386 -s -o
 OUTFILES=hello-world print-a cat infinite-loop
