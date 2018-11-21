@@ -11,12 +11,13 @@ Usage, if you wanna to compile the BrainFuck code:
 
     ./bfc [source filename] [output filename]
     
-Usage, if you wanna to translate the BrainFuck code to NASM:
+Usage, if you wanna to translate the BrainFuck code to NASM, without compile and link:
 
     ./bft [source filename] [output filename]
 
-#### notice: bf*c* is BrainFuck Compiler
-#### bf*t* is BrainFuck Translator
+**NOTICE:
+bf*c* is BrainFuck Compiler, and
+bf*t* is BrainFuck Translator**
 
 If you see error that NASM is not installed, you should install it:
 
