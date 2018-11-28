@@ -25,9 +25,13 @@ If you see error that NASM is not installed, you should install it:
     
         sudo apt install nasm
         
-    In Fedora and Rad-Hat based:
+    In CentOS and Rad-Hat based:
     
         sudo yum install nasm
+        
+    In Fedora:
+        
+        sudo dnf install nasm
 
     In Arch Linux and Arch Linux based:
     
