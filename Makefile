@@ -19,9 +19,6 @@ main: $(OBJ)
 examples:
 	cd examples && $(MAKE) -B
 
-#tests:
-#	cd tests && $(MAKE) -B
-
 .PHONY: clean examples all
 
 clean:
