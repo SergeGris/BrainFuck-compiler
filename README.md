@@ -7,11 +7,12 @@ Current version of this compiler produces assembly source code,
 which is targeted to x86 CPU and uses Linux system calls.
 Assembly source code has to be compiled with NASM to create executable binary.
 
-Usage, if you wanna to compile the BrainFuck code:
+Usage:
+  If you wanna to compile the BrainFuck code:
 
     ./bfc [source filename] [output filename]
     
-Usage, if you wanna to translate the BrainFuck code to NASM, without compile and link:
+  Or, if you wanna to translate the BrainFuck code to NASM, without compile and link:
 
     ./bft [source filename] [output filename]
 
