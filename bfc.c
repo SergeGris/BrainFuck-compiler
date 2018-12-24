@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     if (argc <= 2)
     {
@@ -16,16 +16,16 @@ int main(int argc, char **argv)
     char *in_filename = argv[1];
     char *out_filename = argv[2];
     
-    // ../brainfuck nameofbf.bf obj/nameofasm.asm
+    // ./bft nameofbf.bf obj/nameofasm.asm
     // nasm -f elf32 obj/nameofasm.asm
     // ld -m elf_i386 -s -o nameofelf nameofobj.o
-    const char *bfcompiler = "./brainfuck ";
+    const char *bftranslator = "./bft ";
     const char *nasmflags = "nasm -f elf32 ";
     const char *ldflags = "ld -m elf_i386 -s -o ";
     const char *objext = ".o ";
     
     char compile[1024];
-    strcpy(compile, bfcompiler);
+    strcpy(compile, bftranslator);
     strcat(compile, in_filename);
     strcat(compile, " ");
     strcat(compile, out_filename);
