@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     
     char *out_filename = "a.out";
     if (argc == 3) {
-        char *out_filename = argv[2];
+        out_filename = argv[2];
     }
     int optimization_level = 1;
 
