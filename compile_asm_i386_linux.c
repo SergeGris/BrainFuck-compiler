@@ -6,7 +6,7 @@
 #include "compile_asm_i386_linux.h"
 #include "compiler.h"
 
-// Linux kernel system calls
+// Linux kernel system calls on x86 system
 static const int syscall_stdin     = 0;
 static const int syscall_stdout    = 1;
 static const int syscall_sys_exit  = 1;
@@ -59,9 +59,9 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
         str_append
         (
             &output, "print_char:\n"
-            "push eax\npush ebx\npush ecx\npush edx\nxor ebx, ebx\nmov bl, [eax]\nmov [buffer], bl\n"
-            "mov eax, %d\nmov ebx, %d\nmov ecx, buffer\nmov edx, 1\nint 0x80\n"
-            "pop edx\npop ecx\npop ebx\npop eax\nret\n\n", syscall_sys_write, syscall_stdout
+            "\t\tpush\teax\n\t\tpush\tebx\n\t\tpush\tecx\n\t\tpush\tedx\n\t\txor\t\tebx,ebx\n\t\tmov\t\tbl,[eax]\n\t\tmov\t\t[buffer],bl\n"
+            "\t\tmov\t\teax,%d\n\t\tmov\t\tebx,%d\n\t\tmov\t\tecx,buffer\n\t\tmov\t\tedx,1\n\t\tint\t\t0x80\n"
+            "\t\tpop\t\tedx\n\t\tpop\t\tecx\n\t\tpop\t\tebx\n\t\tpop\t\teax\n\t\tret\n\n", syscall_sys_write, syscall_stdout
         );
     }
     if (!source->no_input_commands)
@@ -69,14 +69,14 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
         str_append
         (
             &output, "input_char:\n"
-            "push eax\npush ebx\npush ecx\npush edx\nmov eax, %d\nmov ebx, %d\nmov ecx, buffer\n"
-            "mov edx, 1\nint 0x80\npop edx\npop ecx\npop ebx\npop eax\nmov cl, [buffer]\n"
-            "mov [eax], cl\nret\n\n", syscall_sys_read, syscall_stdin
+            "\t\tpush\t\teax\n\t\tpush\t\tebx\n\t\tpush\t\tecx\n\t\tpush\t\tedx\n\t\tmov\t\teax,%d\n\t\tmov\t\tebx,%d\n\t\tmov\t\tecx,buffer\n"
+            "\t\tmov\t\tedx,1\n\t\tint\t\t0x80\n\t\tpop edx\n\t\tpop\t\tecx\n\t\tpop\t\tebx\n\t\tpop\t\teax\n\t\tmov\t\tcl,[buffer]\n"
+            "\t\tmov\t\t[eax],cl\n\t\tret\n\n", syscall_sys_read, syscall_stdin
         );
     }
 
     // Execution starts at this point
-    str_append(&output, "_start:\nmov eax, array\n");
+    str_append(&output, "_start:\n\t\tmov\t\teax,array\n");
 
     // Convert tokens to machine code
     int errorcode = 0;
@@ -88,11 +88,11 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
             case T_INC:
                 if (current.value > 0)
                 {
-                    str_append(&output, "mov bl, %d\nadd [eax], bl\n", current.value & 0xFF);
+                    str_append(&output, "\t\tmov\t\tbl,%d\n\t\tadd\t\t[eax],bl\n", current.value & 0xFF);
                 }
                 else if (current.value < 0)
                 {
-                    str_append(&output, "mov bl, %d\nsub [eax], bl\n", (-current.value) & 0xFF);
+                    str_append(&output, "\t\tmov\t\tbl,%d\n\t\tsub\t\t[eax],bl\n", (-current.value) & 0xFF);
                 }
                 else
                 {   // Command has no effect
@@ -101,22 +101,22 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
             case T_POINTER_INC:
                 if (current.value > 0)
                 {
-                    str_append(&output, "mov ebx, %d\nadd eax, ebx\n", current.value);
+                    str_append(&output, "\t\tmov\t\tebx,%d\n\t\tadd\t\teax,ebx\n", current.value);
                 }
                 else if (current.value < 0)
                 {
-                    str_append(&output, "mov ebx, %d\nsub eax, ebx\n", -current.value);
+                    str_append(&output, "\t\tmov\t\tebx,%d\n\t\tsub\t\teax,ebx\n", -current.value);
                 }
                 else
                 { // Command has no effect
                 }
                 break;
             case T_LABEL:
-                str_append(&output, "\nlabel_%d_begin:\ncmp byte [eax], 0\nje label_%d_end\n",
+                str_append(&output, "\nlabel_%d_begin:\n\t\tcmp\t\tbyte [eax],0\n\t\tje\t\tlabel_%d_end\n",
                            current.value, current.value);
                 break;
             case T_JUMP:
-                str_append(&output, "\nlabel_%d_end:\ncmp byte [eax], 0\njne label_%d_begin\n",
+                str_append(&output, "\nlabel_%d_end:\n\t\tcmp\t\tbyte [eax],0\n\t\tjne\t\tlabel_%d_begin\n",
                            current.value, current.value);
                 break;
             case T_INPUT:
@@ -126,7 +126,7 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
                 }
                 else
                 {
-                    str_append(&output, "call input_char\n");
+                    str_append(&output, "\t\tcall\tinput_char\n");
                 }
                 break;
             case T_PRINT:
@@ -136,7 +136,7 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
                 }
                 else
                 {
-                    str_append(&output, "call print_char\n");
+                    str_append(&output, "\t\tcall\tprint_char\n");
                 }
                 break;
             default:
@@ -147,7 +147,7 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
     // Write quit commands
     if (errorcode == 0)
     {
-        str_append(&output, "\nmov eax, %d\nmov ebx, 0\nint 0x80\n", syscall_sys_exit);
+        str_append(&output, "\n\t\tmov\t\teax,%d\n\t\tmov\t\tebx,0\n\t\tint\t\t0x80\n", syscall_sys_exit);
     }
     if (errorcode != 0)
     {
