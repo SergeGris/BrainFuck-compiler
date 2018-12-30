@@ -1,7 +1,7 @@
-IDIR=
-LDIR=
-ODIR=obj
-FLAGS=-std=c11 -O3 -Wall -march=native -flto -funroll-loops -ffunction-sections -Wl,--gc-sections -fno-asynchronous-unwind-tables -Wl,--strip-all
+IDIR =
+LDIR =
+ODIR =obj
+FLAGS =-std=c11 -O3 -Wall -march=native -flto -funroll-loops -ffunction-sections -Wl,--gc-sections -fno-asynchronous-unwind-tables -Wl,--strip-all
 
 _OBJ = main.o tokenizer.o compiler.o compile_asm_i386_linux.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
