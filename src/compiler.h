@@ -1,6 +1,6 @@
 
-#ifndef COMPILER_H
-#define COMPILER_H
+#ifndef _COMPILER_H_
+#define _COMPILER_H_
 
 #include "tokenizer.h"
 
