@@ -7,35 +7,18 @@ Current version of this compiler produces assembly source code,
 which is targeted to x86 CPU and uses Linux system calls.
 Assembly source code has to be compiled with NASM to create executable binary.
 
-Usage:
-  If you wanna to compile the BrainFuck code:
-
-    ./bfc [source filename] [output filename]
+Install:
     
-  Or, if you wanna to translate the BrainFuck code to NASM, without compile and link:
-
-    ./bft [source filename] [output filename]
-
-**NOTICE:
-bf*c* is BrainFuck Compiler, and
-bf*t* is BrainFuck Translator**
-
-If you see error that NASM is not installed, you should install it:
-
-    In Debian and Debian based:
+    make && sudo make install
     
-        sudo apt install nasm
-        
-    In CentOS and Rad-Hat based:
-    
-        sudo yum install nasm
-        
-    In Fedora:
-        
-        sudo dnf install nasm
+Uninstall:
 
-    In Arch Linux and Arch Linux based:
-    
-        sudo pacman install nasm
+    sudo make uninstall
+
+Usage (requires NASM):
+
+    ./bfc [source filename] [assembler output filename]
+    nasm -f elf32 [assembler output filename] -o [object output filename]
+    ld -m elf_i386 -s [object output filename] -o [ELF output filename]
 
 ###### In the future, I will change the NASM to GAS for greater portability.
