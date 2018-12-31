@@ -1,7 +1,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 
 #include "tokenizer.h"
 #include "compiler.h"
@@ -52,7 +51,7 @@ int main(int argc, char *argv[])
     
     char *out_filename = "a.out";
     if (argc == 3) {
-        out_filename = argv[2];
+        char *out_filename = argv[2];
     }
     int optimization_level = 1;
 
