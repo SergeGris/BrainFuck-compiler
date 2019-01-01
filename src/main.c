@@ -1,9 +1,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 
 #include "tokenizer.h"
 #include "compiler.h"
+
+static char *in_filename;
+static char *out_filename = "a.out";
+static bool assemble = true;
 
 char *read_file(const char *filename)
 {
@@ -34,25 +39,69 @@ char *read_file(const char *filename)
 
 void usage(int status)
 {
+    const char *help;
     if (status != EXIT_SUCCESS) {
-        //emit_try_help();
+        help = "Try 'bfc -h' for more information.\n";
     } else {
-        printf("Usage: %s [source filename] [assembler output]\nor: %s [source filename] [ELF output]", "bft", "bfc");
-        exit(status);
+        help =
+            "Usage: bfc [options] <input filename> -o <output filename>"
+            "\n"
+            "  -t\t\t\tCompile only. Do not assemble or link.\n"
+            "  -o <file>\t\tPlace the output into <file>.\n"
+            "  -h\t\t\tDisplay this information.\n"
+            "  -v\t\t\tDisplay compiler version information.\n"
+            "\n"
+            "Options must be after name of compiler\n";
+    }
+    fprintf(status ? stderr : stdout, help);
+    exit(status);
+}
+
+void parseopt(int argc, char *argv[])
+{
+    for (;;)
+    {
+        int opt = getopt(argc, argv, "cto:hv");
+        if (opt == -1) {
+            break;
+        }
+
+        switch (opt)
+        {
+            case 'c':
+                assemble = true;
+                break;
+            case 't':
+                assemble = false;
+                break;
+            case 'o':
+                out_filename = optarg;
+                break;
+            case 'h':
+                usage(EXIT_SUCCESS);
+                break;
+            case 'v':
+                fprintf(stdout, "bfc: version 0.9\n");
+                exit(EXIT_SUCCESS);
+                break;
+            default:
+                usage(EXIT_FAILURE);
+                break;
+        }
+
+        if (optind != argc - 1) {
+            usage(EXIT_FAILURE);
+        }
+        in_filename = argv[optind];
     }
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc == 1 || argc > 3) {
+    if (argc == 1) {
         usage(EXIT_FAILURE);
     }
-    char *in_filename = argv[1];
-    
-    char *out_filename = "a.out";
-    if (argc == 3) {
-        char *out_filename = argv[2];
-    }
+    parseopt(argc, argv); 
     int optimization_level = 1;
 
     // Open file
