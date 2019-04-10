@@ -44,8 +44,8 @@ Token parse_token(const char symbol);
 int parse_value(const char symbol);
 char *strip_comments(const char *const source);
 
-int tokenize(const char *const source, Command **out_result, unsigned int *out_result_len);
-int optimize(const Command *const tokens, const unsigned int tokens_len, ProgramSource *out_result, const int level);
+int tokenize(const char *const source, Command **out_result, size_t *out_result_len);
+int optimize(const Command *const tokens, const size_t tokens_len, ProgramSource *out_result, const int level);
 int tokenize_and_optimize(const char *const source, ProgramSource *out_result, const int level);
 
 #endif

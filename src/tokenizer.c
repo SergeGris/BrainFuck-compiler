@@ -45,17 +45,15 @@ int parse_value(const char symbol)
 
 char *strip_comments(const char *const source)
 {
-    const unsigned int size = strlen(source);
+    const size_t size = strlen(source);
     char *result = malloc((size + 1) * sizeof(char));
-    if (result == NULL)
-    {   // Error: Out of memory
+    if (result == NULL) {
+        /* Error: Out of memory */
         return NULL;
     }
     int index = 0;
-    for (int i = 0; i < size; i++)
-    {
-        if (parse_token(source[i]) != T_COMMENT)
-        {
+    for (size_t i = 0; i < size; i++) {
+        if (parse_token(source[i]) != T_COMMENT) {
             result[index++] = source[i];
         }
     }
@@ -63,12 +61,12 @@ char *strip_comments(const char *const source)
     return result;
 }
 
-static int append_to_array(const Command cmd, Command **out_result, unsigned int *out_result_len)
+static int append_to_array(const Command cmd, Command **out_result, size_t *out_result_len)
 {
-    unsigned int new_size = *out_result_len + 1;
+    size_t new_size = *out_result_len + 1;
     Command *tmp = realloc(*out_result, new_size * sizeof(Command));
-    if (tmp == NULL)
-    {   // Error: Out of memory
+    if (tmp == NULL) {
+        /* Error: Out of memory */
         return 1;
     }
     tmp[new_size - 1] = cmd;
@@ -78,32 +76,31 @@ static int append_to_array(const Command cmd, Command **out_result, unsigned int
     return 0;
 }
 
-int tokenize(const char *const source, Command **out_result, unsigned int *out_result_len)
+int tokenize(const char *const source, Command **out_result, size_t *out_result_len)
 {
-    // Count [ and ] commands. Difference should be 0 at the end of the program, so
-    // that all jumps have a matching label
+    /* Count [ and ] commands. Difference should be 0 at the end of the program, so
+       that all jumps have a matching label.  */
     int opening_label_count = 0;
     int closing_label_count = 0;
 
-    // Initialize final result
+    /* Initialize final result */
     *out_result_len = 0;
     *out_result = NULL;
-    unsigned int result_len = 0;
+    size_t result_len = 0;
     Command *result = NULL;
 
-    // Strip comments from the source
+    /* Strip comments from the source */
     char *cleaned_source = strip_comments(source);
-    if (cleaned_source == NULL)
-    {   // Error: Out of memory
+    if (cleaned_source == NULL) {
+        /* Error: Out of memory */
         return 101;
     }
 
-    // Command that is currently being constructed
+    /* Command that is currently being constructed */
     Command command = { T_COMMENT, 0 };
 
     int errorcode = 0;
-    for (int i = 0; i < strlen(cleaned_source); i++)
-    {
+    for (size_t i = 0; i < strlen(cleaned_source); i++) {
         char c_current = cleaned_source[i];
         char c_next = cleaned_source[i + 1];
 
@@ -112,66 +109,56 @@ int tokenize(const char *const source, Command **out_result, unsigned int *out_r
 
         command.token = current;
 
-        // Set value for this command:
-        // Data increment and pointer increment are added to previous symbol.
-        // Labels and jumps need a number.
-        // Read and print need nothing.
-        if (current == T_INC)
-        {
+        /* Set value for this command:
+           Data increment and pointer increment are added to previous symbol.
+           Labels and jumps need a number.
+           Read and print need nothing.  */
+        if (current == T_INC) {
             command.value += parse_value(c_current);
         }
-        else if (current == T_POINTER_INC)
-        {
+        else if (current == T_POINTER_INC) {
             const int value = parse_value(c_current);
             command.value += value;
         }
-        else if (current == T_LABEL)
-        {
+        else if (current == T_LABEL) {
             command.value = opening_label_count++;
         }
-        else if (current == T_JUMP)
-        {
+        else if (current == T_JUMP) {
             closing_label_count++;
-            if (closing_label_count > opening_label_count)
-            {   // Error: Label mismatch
+            if (closing_label_count > opening_label_count) {
+                /* Error: Label mismatch */
                 errorcode = 102;
                 break;
             }
 
-            // Traverse final result backwards to find the correct label
+            /* Traverse final result backwards to find the correct label */
             int correct_label = -1;
             int open_labels_to_skip = 0;
-            for (int kk = result_len - 1; kk >= 0; kk--)
-            {
-                if (result[kk].token == T_JUMP)
-                {
+            for (int kk = result_len - 1; kk >= 0; kk--) {
+                if (result[kk].token == T_JUMP) {
                     open_labels_to_skip++;
                 }
-                else if (result[kk].token == T_LABEL)
-                {
-                    if (open_labels_to_skip-- == 0)
-                    {
+                else if (result[kk].token == T_LABEL) {
+                    if (open_labels_to_skip-- == 0) {
                         correct_label = result[kk].value;
                         break;
                     }
                 }
             }
-            if (correct_label < 0)
-            {   // Error: Label mismatch
+            if (correct_label < 0) {
+                /* Error: Label mismatch */
                 errorcode = 102;
                 break;
             }
             command.value = correct_label;
         }
 
-        // Expecting new command: Push previous command to the final result and make a new one
-        if (current != next || (current != T_INC && current != T_POINTER_INC))
-        {
-            if (command.token != T_COMMENT)
-            {
+        /* Expecting new command: Push previous command to the final result and make a new one */
+        if (current != next || (current != T_INC && current != T_POINTER_INC)) {
+            if (command.token != T_COMMENT) {
                 int err = append_to_array(command, &result, &result_len);
-                if (err)
-                {   // Error: Out of memory
+                if (err) {
+                    /* Error: Out of memory */
                     errorcode = 101;
                     break;
                 }
@@ -180,22 +167,20 @@ int tokenize(const char *const source, Command **out_result, unsigned int *out_r
             command.value = 0;
         }
     }
-    if (errorcode == 0)
-    {
-        if (opening_label_count != closing_label_count)
-        {   // Error: Label mismatch
+    if (errorcode == 0) {
+        if (opening_label_count != closing_label_count) {
+            /* Error: Label mismatch */
             errorcode = 102;
         }
     }
-    if (errorcode != 0)
-    {
+    if (errorcode != 0) {
         free(result);
         free(cleaned_source);
         return errorcode;
     }
     free(cleaned_source);
 
-    // Copy allocated final result to the arguments
+    /* Copy allocated final result to the arguments */
     *out_result = result;
     *out_result_len = result_len;
 
@@ -203,117 +188,103 @@ int tokenize(const char *const source, Command **out_result, unsigned int *out_r
 }
 
 
-int optimize(const Command *const tokens, const unsigned int tokens_len, ProgramSource *out_result, const int level)
+int optimize(const Command *const tokens, const size_t tokens_len, ProgramSource *out_result, const int level)
 {
     int err = 0;
 
     Command *input_tokens = malloc(tokens_len * sizeof(Command));
-    if (input_tokens == NULL)
-    {   // Error: Out of memory
+    if (input_tokens == NULL) {
+        /* Error: Out of memory */
         return 101;
     }
-    unsigned int input_len = tokens_len;
+    size_t input_len = tokens_len;
     memcpy(input_tokens, tokens, tokens_len * sizeof(Command));
 
     bool no_print_commands = false, no_input_commands = false;
 
-    // Level 0: Return code as is
-
-    // Level 1:
-    // Remove inactive loops (no +-, before the loop start)
-    // Check if there are no print commands
-    // Check if there are no input commands
-    if (level >= 1)
-    {   // Remove inactive loops
+    /* Level 0: Return code as is
+       Level 1:
+       Remove inactive loops (no +-, before the loop start)
+       Check if there are no print commands
+       Check if there are no input commands.  */
+    if (level >= 1) {
+        /* Remove inactive loops */
         const int max_passes = 10;
         bool finished = false;
-        for (int round = 0; round < max_passes && !finished; round++)
-        {
+        for (int round = 0; round < max_passes && !finished; round++) {
             int inactive_loop_index = -1;
-            for (unsigned int i = 0; i < input_len; i++)
-            {
+            for (size_t i = 0; i < input_len; i++) {
                 const Command current = input_tokens[i];
-                if (current.token == T_INC || current.token == T_INPUT)
-                {   // Not inactive
+                if (current.token == T_INC || current.token == T_INPUT) {
+                    /* Not inactive */
                     finished = true;
                     break;
                 }
-                else if (current.token == T_LABEL)
-                {
+                else if (current.token == T_LABEL) {
                     inactive_loop_index = current.value;
                     break;
                 }
             }
             bool inside_loop = false;
-            for (unsigned int i = 0; i < input_len; i++)
-            {
+            for (size_t i = 0; i < input_len; i++) {
                 const Command current = input_tokens[i];
-                if (current.token == T_LABEL && current.value == inactive_loop_index)
-                {
+                if (current.token == T_LABEL && current.value == inactive_loop_index) {
                     inside_loop = true;
                 }
-                if (inside_loop)
-                {
+                if (inside_loop) {
                     input_tokens[i].token = T_COMMENT;
-                    if (current.token == T_JUMP && current.value == inactive_loop_index)
-                    {
+                    if (current.token == T_JUMP && current.value == inactive_loop_index) {
                         break;
                     }
                 }
             }
         }
 
-        // Find input and print commands
+        /* Find input and print commands */
         bool found_input = false, found_print = false;
-        for (unsigned int i = 0; i < input_len; i++)
-        {
+        for (size_t i = 0; i < input_len; i++) {
             const Command current = input_tokens[i];
-            if (current.token == T_INPUT)
-            {
+            if (current.token == T_INPUT) {
                 found_input = true;
             }
-            else if (current.token == T_PRINT)
-            {
+            else if (current.token == T_PRINT) {
                 found_print = true;
             }
-            if (found_input && found_print)
-            {
+            if (found_input && found_print) {
                 break;
             }
         }
         no_print_commands = !found_print;
         no_input_commands = !found_input;
     }
-    // TODO: Level 2:
-    // If no print or input commands, program has no effect
-    // => Either remove everything or replace with [] if infinite loop
-    if (level >= 2)
-    {   // Error: Not implemented
+    /* TODO: Level 2:
+       If no print or input commands, program has no effect
+       => Either remove everything or replace with [] if infinite loop.  */
+    if (level >= 2) {
+        /* Error: Not implemented */
         err = 103;
     }
 
-    if (err != 0)
-    {
+    if (err != 0) {
         free(input_tokens);
         return err;
     }
 
-    // Compact result by stripping out comments
+    /* Compact result by stripping out comments */
     out_result->tokens = malloc(input_len * sizeof(Command));
-    if (out_result->tokens == NULL)
-    {   // Error: Out of memory
+    if (out_result->tokens == NULL) {
+        /* Error: Out of memory */
         free(input_tokens);
         return 101;
     }
 
     unsigned int index = 0;
-    for (unsigned int i = 0; i < input_len; i++)
-    {
-        if (input_tokens[i].token != T_COMMENT)
-        {
+    for (size_t i = 0; i < input_len; i++) {
+        if (input_tokens[i].token != T_COMMENT) {
             out_result->tokens[index++] = input_tokens[i];
         }
     }
+
     out_result->length = index;
     out_result->no_print_commands = no_print_commands;
     out_result->no_input_commands = no_input_commands;
@@ -330,10 +301,9 @@ int tokenize_and_optimize(const char *const source, ProgramSource *out_result, c
     out_result->length = 0;
 
     Command *tokenized_source;
-    unsigned int tokenized_source_length = 0;
+    size_t tokenized_source_length = 0;
     int err = tokenize(source, &tokenized_source, &tokenized_source_length);
-    if (err != 0)
-    {
+    if (err != 0) {
         return err;
     }
 

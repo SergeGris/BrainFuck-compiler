@@ -22,15 +22,14 @@ static int str_append(char **str, const char *format, ...)
     va_start(arg_ptr, format);
     vsprintf(formatted_str, format, arg_ptr);
 
-    const unsigned int old_length = (*str == NULL ? 0 : strlen(*str));
+    const size_t old_length = (*str == NULL ? 0 : strlen(*str));
     char *new_str = calloc(old_length + strlen(formatted_str) + 1, sizeof(char));
-    if (new_str == NULL)
-    {   // Error: Out of memory
+    if (new_str == NULL) {
+        // Error: Out of memory
         return 201;
     }
 
-    if (*str != NULL)
-    {
+    if (*str != NULL) {
         strcat(new_str, *str);
     }
     strcat(new_str, formatted_str);
@@ -41,7 +40,7 @@ static int str_append(char **str, const char *format, ...)
     return 0;
 }
 
-int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, unsigned int *final_output_length)
+int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, size_t *final_output_length)
 {
     char *output = NULL;
     *final_output = NULL;
@@ -54,8 +53,7 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
     str_append(&output, "section .text\nglobal _start\n\n");
 
     // Subroutines for I/O
-    if (!source->no_print_commands)
-    {
+    if (!source->no_print_commands) {
         str_append
         (
             &output, "print_char:\n"
@@ -64,8 +62,7 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
             "\t\tpop\t\tedx\n\t\tpop\t\tecx\n\t\tpop\t\tebx\n\t\tpop\t\teax\n\t\tret\n\n", syscall_sys_write, syscall_stdout
         );
     }
-    if (!source->no_input_commands)
-    {
+    if (!source->no_input_commands) {
         str_append
         (
             &output, "input_char:\n"
@@ -80,77 +77,68 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, u
 
     // Convert tokens to machine code
     int errorcode = 0;
-    for (unsigned int i = 0; i < source->length && errorcode == 0; i++)
-    {
+    for (size_t i = 0; i < source->length && errorcode == 0; i++) {
         const Command current = source->tokens[i];
         switch (current.token)
         {
-            case T_INC:
-                if (current.value > 0)
-                {
-                    str_append(&output, "\t\tmov\t\tbl,%d\n\t\tadd\t\t[eax],bl\n", current.value & 0xFF);
-                }
-                else if (current.value < 0)
-                {
-                    str_append(&output, "\t\tmov\t\tbl,%d\n\t\tsub\t\t[eax],bl\n", (-current.value) & 0xFF);
-                }
-                else
-                {   // Command has no effect
-                }
-                break;
-            case T_POINTER_INC:
-                if (current.value > 0)
-                {
-                    str_append(&output, "\t\tmov\t\tebx,%d\n\t\tadd\t\teax,ebx\n", current.value);
-                }
-                else if (current.value < 0)
-                {
-                    str_append(&output, "\t\tmov\t\tebx,%d\n\t\tsub\t\teax,ebx\n", -current.value);
-                }
-                else
-                { // Command has no effect
-                }
-                break;
-            case T_LABEL:
-                str_append(&output, "\nlabel_%d_begin:\n\t\tcmp\t\tbyte [eax],0\n\t\tje\t\tlabel_%d_end\n",
-                           current.value, current.value);
-                break;
-            case T_JUMP:
-                str_append(&output, "\nlabel_%d_end:\n\t\tcmp\t\tbyte [eax],0\n\t\tjne\t\tlabel_%d_begin\n",
-                           current.value, current.value);
-                break;
-            case T_INPUT:
-                if (source->no_input_commands)
-                {   // Error: Unexpected token
-                    errorcode = 202;
-                }
-                else
-                {
-                    str_append(&output, "\t\tcall\tinput_char\n");
-                }
-                break;
-            case T_PRINT:
-                if (source->no_print_commands)
-                {   // Error: Unexpected token
-                    errorcode = 202;
-                }
-                else
-                {
-                    str_append(&output, "\t\tcall\tprint_char\n");
-                }
-                break;
-            default:
-                break;
+        case T_INC:
+            if (current.value > 0) {
+                str_append(&output, "\t\tmov\t\tbl,%d\n\t\tadd\t\t[eax],bl\n", current.value & 0xFF);
+            }
+            else if (current.value < 0) {
+                str_append(&output, "\t\tmov\t\tbl,%d\n\t\tsub\t\t[eax],bl\n", (-current.value) & 0xFF);
+            }
+            else {
+                /* Command has no effect */
+            }
+            break;
+        case T_POINTER_INC:
+            if (current.value > 0) {
+                str_append(&output, "\t\tmov\t\tebx,%d\n\t\tadd\t\teax,ebx\n", current.value);
+            }
+            else if (current.value < 0) {
+                str_append(&output, "\t\tmov\t\tebx,%d\n\t\tsub\t\teax,ebx\n", -current.value);
+            }
+            else {
+                /* Command has no effect */
+            }
+            break;
+        case T_LABEL:
+            str_append(&output, "\nlabel_%d_begin:\n\t\tcmp\t\tbyte [eax],0\n\t\tje\t\tlabel_%d_end\n",
+                       current.value, current.value);
+            break;
+        case T_JUMP:
+            str_append(&output, "\nlabel_%d_end:\n\t\tcmp\t\tbyte [eax],0\n\t\tjne\t\tlabel_%d_begin\n",
+                       current.value, current.value);
+            break;
+        case T_INPUT:
+            if (source->no_input_commands) {
+                /* Error: Unexpected token */
+                errorcode = 202;
+            }
+            else {
+                str_append(&output, "\t\tcall\tinput_char\n");
+            }
+            break;
+        case T_PRINT:
+            if (source->no_print_commands) {
+                /* Error: Unexpected token */
+                errorcode = 202;
+            }
+            else {
+                str_append(&output, "\t\tcall\tprint_char\n");
+            }
+            break;
+        default:
+            break;
         }
     }
 
-    // Write quit commands
-    if (errorcode == 0)
-    {
+    /* Write quit commands */
+    if (errorcode == 0) {
         str_append(&output, "\n\t\tmov\t\teax,%d\n\t\tmov\t\tebx,0\n\t\tint\t\t0x80\n", syscall_sys_exit);
     }
-    if (errorcode != 0)
-    {
+    if (errorcode != 0) {
         free(output);
         return errorcode;
     }
