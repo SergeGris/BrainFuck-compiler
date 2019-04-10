@@ -1,14 +1,11 @@
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-#include <getopt.h>
+#include <unistd.h>
 
 #include "tokenizer.h"
 #include "compiler.h"
-
-static char *in_filename;
-static char *out_filename = "a.out";
-static bool assemble = true;
 
 char *read_file(const char *filename)
 {
@@ -16,17 +13,15 @@ char *read_file(const char *filename)
     int length = 0;
     FILE *handle = fopen(filename, "rb");
 
-    if (handle)
-    {
+    if (handle != NULL) {
         fseek(handle, 0, SEEK_END);
         length = ftell(handle);
         fseek(handle, 0, SEEK_SET);
         buffer = malloc((length + 1) * sizeof(char));
-        if (buffer)
-        {
+        if (buffer) {
             int result = fread(buffer, sizeof(char), length, handle);
-            if (result != length)
-            {   // Error: Reading failed
+            if (result != length) {
+                /* Error: Reading failed */
                 free(buffer);
                 return NULL;
             }
@@ -37,96 +32,105 @@ char *read_file(const char *filename)
     return buffer;
 }
 
-void usage(int status)
+const char *change_extension(char *filename, const char *new_extension)
 {
-    const char *help;
-    if (status != EXIT_SUCCESS) {
-        help = "Try 'bfc -h' for more information.\n";
-    } else {
-        help =
-            "Usage: bfc [options] <input filename> -o <output filename>"
-            "\n"
-            "  -t\t\t\tCompile only. Do not assemble or link.\n"
-            "  -o <file>\t\tPlace the output into <file>.\n"
-            "  -h\t\t\tDisplay this information.\n"
-            "  -v\t\t\tDisplay compiler version information.\n"
-            "\n"
-            "Options must be after name of compiler\n";
+    if (filename == NULL || *filename == '\0') {
+        return "";
     }
-    fprintf(status ? stderr : stdout, help);
-    exit(status);
-}
-
-void parseopt(int argc, char *argv[])
-{
-    for (;;)
-    {
-        int opt = getopt(argc, argv, "cto:hv");
-        if (opt == -1) {
-            break;
+    char *tmp = filename + strlen(filename) - 1;
+    for (; tmp >= filename; tmp--) {
+        if (*tmp == '.') {
+            for (; *new_extension != '\0';) {
+                *tmp++ = *new_extension++;
+            }
+            *tmp++ = '\0';
+            return filename;
         }
-
-        switch (opt)
-        {
-            case 'c':
-                assemble = true;
-                break;
-            case 't':
-                assemble = false;
-                break;
-            case 'o':
-                out_filename = optarg;
-                break;
-            case 'h':
-                usage(EXIT_SUCCESS);
-                break;
-            case 'v':
-                fprintf(stdout, "bfc: version 0.9\n");
-                exit(EXIT_SUCCESS);
-                break;
-            default:
-                usage(EXIT_FAILURE);
-                break;
-        }
-
-        if (optind != argc - 1) {
-            usage(EXIT_FAILURE);
-        }
-        in_filename = argv[optind];
     }
+    tmp = filename + strlen(filename);
+    for (; *new_extension != '\0';) {
+        *tmp++ = *new_extension++;
+    }
+    return filename;
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc == 1) {
-        usage(EXIT_FAILURE);
+    if (argc <= 1 || argc >= 4) {
+        printf("Usage: ./%s [source filename] [output filename]\n", argv[0]);
+        exit(EXIT_SUCCESS);
     }
-    parseopt(argc, argv); 
-    int optimization_level = 1;
 
-    // Open file
+    char *out_filename = "a.out";
+    bool assemble = true;
+
+    char *in_filename = argv[1];
+    if (argc == 3) {
+        out_filename = argv[2];
+    }
+
+    int optimization_level = 1;
+    ProgramSource tokenized_source;
+    int err = 0;
+    
+    /* Open file */
     char *source = read_file(in_filename);
     if (source == NULL) {
         printf("Error: Failed to read file %s\n", in_filename);
         exit(EXIT_FAILURE);
     }
 
-    // Interpret symbols
-    ProgramSource tokenized_source;
-    int err = tokenize_and_optimize(source, &tokenized_source, optimization_level);
+    /* Interpret symbols */
+    err = tokenize_and_optimize(source, &tokenized_source, optimization_level);
     if (err != 0) {
         printf("Error %d\n", err);
         free(source);
         exit(err);
     }
 
-    // Write result file
+    /* Write result file */
     err = compile_to_file(out_filename, FILETYPE_ASSEMBLY, &tokenized_source);
     if (err != 0) {
         printf("Error %d\n", err);
     }
+
     free(tokenized_source.tokens);
     free(source);
+
+    /* Run NASM to compile it if 'assemble' == true */
+    if (assemble) {
+        char *out_obj = malloc((strlen(out_filename) + 1) * sizeof(char)); /* Reserve 1 byte for '\0' */
+
+        strcpy(out_obj, out_filename);
+        change_extension(out_obj, ".o");
+
+        char *as = malloc((strlen("nasm -f elf32 -o  ") + strlen(out_obj) + strlen(out_filename) + 1) * sizeof(char));
+        sprintf(as, "nasm -f elf32 -o %s %s", out_obj, out_filename);
+        char *ld = malloc((strlen("ld -m elf_i386 -s -o  ") + strlen(out_obj) + strlen(out_filename) + 1) * sizeof(char));
+        sprintf(ld, "ld -m elf_i386 -s -o %s %s", out_filename, out_obj);
+        char *rm = malloc((strlen("rm ") + strlen(out_obj)) * sizeof(char));
+        sprintf(rm, "rm %s", out_obj);
+
+        printf("out_obj = %s\nout_filename = %s\n", out_obj, out_filename);
+        printf("%s\n%s\n%s\n", as, ld, rm);
+        
+        system(as);
+        system(ld);
+        system(rm);
+
+        /*
+        char *as[] = { "nasm", "-f", "elf32", "-o", out_obj, out_filename, (char *) NULL };
+        execvp(as[0], as);
+        char *ld[] = { "ld", "-m", "elf_i386", "-s", "-o", out_filename, out_obj, (char *) NULL };
+        execvp(ld[0], ld);
+        char *rm[] = { "rm", out_obj, (char *) NULL };
+        execvp(rm[0], rm);*/
+
+        free(as);
+        free(ld);
+        free(rm);
+        free(out_obj);
+    }
 
     return err;
 }
