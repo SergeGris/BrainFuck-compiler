@@ -1,12 +1,12 @@
 CC=gcc
-IDIR =
-LDIR =
-ODIR =obj
-FLAGS =-std=c11 -O2 -Wall -g #-ffunction-sections -Wl,--gc-sections -fno-asynchronous-unwind-tables -Wl,--strip-all
+IDIR=
+LDIR=
+ODIR=obj
+FLAGS=-std=c11 -O2 -Wall #-ffunction-sections -Wl,--gc-sections -fno-asynchronous-unwind-tables -Wl,--strip-all
 
-_OBJ = main.o tokenizer.o compiler.o compile_asm_i386_linux.o
-OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
-DEPS = tokenizer.h compiler.h compile_asm_i386_linux.h
+_OBJ=main.o tokenizer.o compiler.o compile_asm_i386_linux.o
+OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
+DEPS=tokenizer.h compiler.h compile_asm_i386_linux.h
 
 all: main
 

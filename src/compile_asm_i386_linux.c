@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -6,18 +7,19 @@
 #include "compile_asm_i386_linux.h"
 #include "compiler.h"
 
-// Linux kernel system calls on x86 system
+/* Linux kernel system calls on x86 system */
 static const int syscall_stdin     = 0;
 static const int syscall_stdout    = 1;
 static const int syscall_sys_exit  = 1;
 static const int syscall_sys_read  = 3;
 static const int syscall_sys_write = 4;
 
-static int str_append(char **str, const char *format, ...)
+static int
+str_append(char **str, const char *format, ...)
 {
-    // This is only used to combine arguments, so fixed-size string should
-    // be safe to use
-    char formatted_str[1000];
+    /* This is only used to combine arguments, so fixed-size string should
+       be safe to use.  */
+    char formatted_str[1024];
     va_list arg_ptr;
     va_start(arg_ptr, format);
     vsprintf(formatted_str, format, arg_ptr);
@@ -25,7 +27,7 @@ static int str_append(char **str, const char *format, ...)
     const size_t old_length = (*str == NULL ? 0 : strlen(*str));
     char *new_str = calloc(old_length + strlen(formatted_str) + 1, sizeof(char));
     if (new_str == NULL) {
-        // Error: Out of memory
+        /* Error: Out of memory */
         return 201;
     }
 
@@ -40,19 +42,20 @@ static int str_append(char **str, const char *format, ...)
     return 0;
 }
 
-int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, size_t *final_output_length)
+int
+tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, size_t *final_output_length)
 {
-    char *output = NULL;
-    *final_output = NULL;
+    char *output         = NULL;
+    *final_output        = NULL;
     *final_output_length = 0;
 
-    // Initialize variables
+    /* Initialize variables */
     str_append(&output, "section .data\nglobal array\narray times %d db 0\nbuffer db 0\n\n", DATA_ARRAY_SIZE);
 
-    // Beginning of the code block
+    /* Beginning of the code block */
     str_append(&output, "section .text\nglobal _start\n\n");
 
-    // Subroutines for I/O
+    /* Subroutines for I/O */
     if (!source->no_print_commands) {
         str_append
         (
@@ -72,10 +75,10 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, s
         );
     }
 
-    // Execution starts at this point
+    /* Execution starts at this point */
     str_append(&output, "_start:\n\t\tmov\t\teax,array\n");
 
-    // Convert tokens to machine code
+    /* Convert tokens to machine code */
     int errorcode = 0;
     for (size_t i = 0; i < source->length && errorcode == 0; i++) {
         const Command current = source->tokens[i];
@@ -83,10 +86,12 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, s
         {
         case T_INC:
             if (current.value > 0) {
-                str_append(&output, "\t\tmov\t\tbl,%d\n\t\tadd\t\t[eax],bl\n", current.value & 0xFF);
+                str_append(&output, "\t\tmov\t\tbl,%d\n\t\tadd\t\t[eax],bl\n",
+                           current.value & 0xFF);
             }
             else if (current.value < 0) {
-                str_append(&output, "\t\tmov\t\tbl,%d\n\t\tsub\t\t[eax],bl\n", (-current.value) & 0xFF);
+                str_append(&output, "\t\tmov\t\tbl,%d\n\t\tsub\t\t[eax],bl\n",
+                           (-current.value) & 0xFF);
             }
             else {
                 /* Command has no effect */
@@ -94,10 +99,12 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, s
             break;
         case T_POINTER_INC:
             if (current.value > 0) {
-                str_append(&output, "\t\tmov\t\tebx,%d\n\t\tadd\t\teax,ebx\n", current.value);
+                str_append(&output, "\t\tmov\t\tebx,%d\n\t\tadd\t\teax,ebx\n",
+                           current.value);
             }
             else if (current.value < 0) {
-                str_append(&output, "\t\tmov\t\tebx,%d\n\t\tsub\t\teax,ebx\n", -current.value);
+                str_append(&output, "\t\tmov\t\tebx,%d\n\t\tsub\t\teax,ebx\n",
+                           -current.value);
             }
             else {
                 /* Command has no effect */
@@ -136,7 +143,8 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, s
 
     /* Write quit commands */
     if (errorcode == 0) {
-        str_append(&output, "\n\t\tmov\t\teax,%d\n\t\tmov\t\tebx,0\n\t\tint\t\t0x80\n", syscall_sys_exit);
+        str_append(&output, "\n\t\tmov\t\teax,%d\n\t\tmov\t\tebx,0\n\t\tint\t\t0x80\n",
+                   syscall_sys_exit);
     }
     if (errorcode != 0) {
         free(output);
@@ -148,3 +156,4 @@ int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, s
 
     return 0;
 }
+

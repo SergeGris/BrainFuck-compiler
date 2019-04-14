@@ -35,13 +35,13 @@ typedef struct
 typedef struct
 {
     Command *tokens;
-    unsigned int length;
+    size_t length;
     bool no_print_commands;
     bool no_input_commands;
 } ProgramSource;
 
 Token parse_token(const char symbol);
-int parse_value(const char symbol);
+int   parse_value(const char symbol);
 char *strip_comments(const char *const source);
 
 int tokenize(const char *const source, Command **out_result, size_t *out_result_len);

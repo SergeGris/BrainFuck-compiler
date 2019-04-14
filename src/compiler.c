@@ -5,7 +5,8 @@
 #include "compiler.h"
 #include "compile_asm_i386_linux.h"
 
-static int write_binary_file(const char *filename, const char *source, const size_t source_length)
+static int
+write_binary_file(const char *filename, const char *source, const size_t source_length)
 {
     FILE *handle = fopen(filename, "wb");
     if (handle == NULL) {
@@ -21,7 +22,8 @@ static int write_binary_file(const char *filename, const char *source, const siz
     return 0;
 }
 
-int compile_to_file(const char *filename, const FileType filetype, ProgramSource *const source)
+int
+compile_to_file(const char *filename, const FileType filetype, ProgramSource *const source)
 {
     char *instructions = NULL;
     size_t instructions_length = 0;
@@ -41,3 +43,4 @@ int compile_to_file(const char *filename, const FileType filetype, ProgramSource
 
     return err;
 }
+
