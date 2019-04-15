@@ -85,7 +85,7 @@ parseopt(int argc, char **argv)
 {
     size_t argv_len;
     for (int i = 1; i < argc; ++i) {
-        if (!strncmp(argv[i], "-o", 2)) {
+        if (!strcmp(argv[i], "-o")) {
             if (i == argc - 1) {
                 puts("bfc: \x1b[31merror:\x1b[0m missing filename after \u2018\x1b[1m-o\x1b[0m\u2019 ");
                 exit(EXIT_FAILURE);
@@ -95,7 +95,7 @@ parseopt(int argc, char **argv)
                 out_filename = argv[i + 1];
             }
         }
-        else if (!strncmp(argv[i], "-s", 2)) {
+        else if (!strcmp(argv[i], "-s")) {
             assemble = false;
         }
 
@@ -103,8 +103,8 @@ parseopt(int argc, char **argv)
         if (argv[i][argv_len - 1] == 'f'
          && argv[i][argv_len - 2] == 'b'
          && argv[i][argv_len - 3] == '.'
-         && in_filename == NULL /* TODO: make linking 2 or more .bf files */) {
-            in_filename = cut_path(argv[i]);
+         && in_filename == NULL /* 'in_filename' by default is NULL */) {
+            in_filename = argv[i];
         }
     }
 
@@ -123,11 +123,11 @@ main(int argc, char *argv[])
 
     if (!assemble) {
         const size_t infn_len = strlen(in_filename);
-        char *buf = malloc(infn_len - 1); /* Allocate one less byte, '.bf' -> '.s' */
+        char *buf = malloc((infn_len - 1) * sizeof(char)); /* Allocate one less byte, '.bf' -> '.s' */
 
-        snprintf(buf, infn_len - 1, in_filename); /* Write in buf filename + '.' */
-        buf[infn_len - 2] = 's';
-        buf[infn_len - 1] = '\0';
+        snprintf(buf, (infn_len - 1), in_filename); /* Write in buf filename + '.' */
+        buf[(infn_len - 1) - 1] = 's';
+        buf[(infn_len - 1) - 0] = '\0';
         
         out_filename = buf;
     }
