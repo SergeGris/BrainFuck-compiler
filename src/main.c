@@ -65,6 +65,17 @@ change_extension(char *filename, const char *new_extension)
     return filename;
 }
 
+char *cut_path(char *str)
+{
+    char *tmp = strchr(str, '\0');
+
+    while (tmp >= str && *tmp != '/') {
+        --tmp;
+    }
+
+    return tmp + 1;
+}
+
 static char *in_filename = NULL;
 static char *out_filename = "a.out";
 static bool assemble = true;
@@ -93,7 +104,7 @@ parseopt(int argc, char **argv)
          && argv[i][argv_len - 2] == 'b'
          && argv[i][argv_len - 3] == '.'
          && in_filename == NULL /* TODO: make linking 2 or more .bf files */) {
-            in_filename = argv[i];
+            in_filename = cut_path(argv[i]);
         }
     }
 
@@ -158,7 +169,7 @@ main(int argc, char *argv[])
         strcpy(out_obj, out_filename);
         change_extension(out_obj, ".o");
 
-        char *as[] = { "nasm", "-f", "elf32", "-o", out_obj, out_filename, (char *) NULL };
+        char *as[] = { "as", "--32", "-o", out_obj, out_filename, (char *) NULL };
         char *ld[] = { "ld", "-m", "elf_i386", "-s", "-o", out_filename, out_obj, (char *) NULL };
 
         printf("Object filename = %s\nOutput filename = %s\n", out_obj, out_filename);
