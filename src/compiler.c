@@ -13,7 +13,7 @@ write_binary_file(const char *filename, const char *source, const size_t source_
         /* Error: Writing failed */
         return 2103;
     }
-    int result = fwrite(source, sizeof(char), source_length, handle);
+    size_t result = fwrite(source, sizeof(char), source_length, handle);
     if (result != source_length) {
         /* Error: Writing failed */
         return 203;

@@ -33,13 +33,12 @@ int parse_value(const char symbol)
     {
     case '+':
     case '>':
-        return 1;
+        return +1;
     case '-':
     case '<':
         return -1;
     default:
         return 0;
-        break;
     }
 }
 
@@ -52,7 +51,7 @@ char *strip_comments(const char *const source)
         return NULL;
     }
     int index = 0;
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; ++i) {
         if (parse_token(source[i]) != T_COMMENT) {
             result[index++] = source[i];
         }
@@ -84,10 +83,10 @@ int tokenize(const char *const source, Command **out_result, size_t *out_result_
     int closing_label_count = 0;
 
     /* Initialize final result */
-    *out_result_len = 0;
-    *out_result = NULL;
+    *out_result_len   = 0;
+    *out_result       = NULL;
     size_t result_len = 0;
-    Command *result = NULL;
+    Command *result   = NULL;
 
     /* Strip comments from the source */
     char *cleaned_source = strip_comments(source);
@@ -100,7 +99,7 @@ int tokenize(const char *const source, Command **out_result, size_t *out_result_
     Command command = { T_COMMENT, 0 };
 
     int errorcode = 0;
-    for (size_t i = 0; i < strlen(cleaned_source); i++) {
+    for (size_t i = 0; i < strlen(cleaned_source); ++i) {
         char c_current = cleaned_source[i];
         char c_next = cleaned_source[i + 1];
 
@@ -124,7 +123,7 @@ int tokenize(const char *const source, Command **out_result, size_t *out_result_
             command.value = opening_label_count++;
         }
         else if (current == T_JUMP) {
-            closing_label_count++;
+            ++closing_label_count;
             if (closing_label_count > opening_label_count) {
                 /* Error: Label mismatch */
                 errorcode = 102;
@@ -134,7 +133,7 @@ int tokenize(const char *const source, Command **out_result, size_t *out_result_
             /* Traverse final result backwards to find the correct label */
             int correct_label = -1;
             int open_labels_to_skip = 0;
-            for (int kk = result_len - 1; kk >= 0; kk--) {
+            for (size_t kk = result_len - 1; ; --kk) {
                 if (result[kk].token == T_JUMP) {
                     open_labels_to_skip++;
                 }
@@ -143,6 +142,10 @@ int tokenize(const char *const source, Command **out_result, size_t *out_result_
                         correct_label = result[kk].value;
                         break;
                     }
+                }
+
+                if (kk == 0) {
+                    break;
                 }
             }
             if (correct_label < 0) {
@@ -173,7 +176,7 @@ int tokenize(const char *const source, Command **out_result, size_t *out_result_
             errorcode = 102;
         }
     }
-    if (errorcode != 0) {
+    else {
         free(result);
         free(cleaned_source);
         return errorcode;
@@ -181,7 +184,7 @@ int tokenize(const char *const source, Command **out_result, size_t *out_result_
     free(cleaned_source);
 
     /* Copy allocated final result to the arguments */
-    *out_result = result;
+    *out_result     = result;
     *out_result_len = result_len;
 
     return 0;
@@ -211,9 +214,9 @@ int optimize(const Command *const tokens, const size_t tokens_len, ProgramSource
         /* Remove inactive loops */
         const int max_passes = 10;
         bool finished = false;
-        for (int round = 0; round < max_passes && !finished; round++) {
+        for (int round = 0; round < max_passes && !finished; ++round) {
             int inactive_loop_index = -1;
-            for (size_t i = 0; i < input_len; i++) {
+            for (size_t i = 0; i < input_len; ++i) {
                 const Command current = input_tokens[i];
                 if (current.token == T_INC || current.token == T_INPUT) {
                     /* Not inactive */
@@ -226,7 +229,7 @@ int optimize(const Command *const tokens, const size_t tokens_len, ProgramSource
                 }
             }
             bool inside_loop = false;
-            for (size_t i = 0; i < input_len; i++) {
+            for (size_t i = 0; i < input_len; ++i) {
                 const Command current = input_tokens[i];
                 if (current.token == T_LABEL && current.value == inactive_loop_index) {
                     inside_loop = true;
@@ -242,7 +245,7 @@ int optimize(const Command *const tokens, const size_t tokens_len, ProgramSource
 
         /* Find input and print commands */
         bool found_input = false, found_print = false;
-        for (size_t i = 0; i < input_len; i++) {
+        for (size_t i = 0; i < input_len; ++i) {
             const Command current = input_tokens[i];
             if (current.token == T_INPUT) {
                 found_input = true;
@@ -279,13 +282,13 @@ int optimize(const Command *const tokens, const size_t tokens_len, ProgramSource
     }
 
     unsigned int index = 0;
-    for (size_t i = 0; i < input_len; i++) {
+    for (size_t i = 0; i < input_len; ++i) {
         if (input_tokens[i].token != T_COMMENT) {
             out_result->tokens[index++] = input_tokens[i];
         }
     }
 
-    out_result->length = index;
+    out_result->length            = index;
     out_result->no_print_commands = no_print_commands;
     out_result->no_input_commands = no_input_commands;
 

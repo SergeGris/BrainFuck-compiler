@@ -14,4 +14,3 @@ typedef enum { FILETYPE_ASSEMBLY } FileType;
 int compile_to_file(const char *filename, const FileType filetype, ProgramSource *const source);
 
 #endif
-

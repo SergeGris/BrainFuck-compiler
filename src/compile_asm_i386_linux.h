@@ -8,4 +8,3 @@
 int tokens_to_asm_i386_linux(ProgramSource *const source, char **final_output, size_t *final_output_length);
 
 #endif
-

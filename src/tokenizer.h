@@ -49,3 +49,4 @@ int optimize(const Command *const tokens, const size_t tokens_len, ProgramSource
 int tokenize_and_optimize(const char *const source, ProgramSource *out_result, const int level);
 
 #endif
+
